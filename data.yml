@@ -1,0 +1,10 @@
+path: /home/rodrigo/entrenamiento_yolo/piu_yolo
+train: images
+val: images  # Por ahora usamos la misma para validar si tienes pocos datos
+
+names:
+  0: difficulty
+  1: fullscore
+  2: rank
+  3: score
+  4: song_name

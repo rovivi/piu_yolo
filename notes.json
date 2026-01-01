@@ -1,0 +1,29 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "difficulty"
+    },
+    {
+      "id": 1,
+      "name": "fullscore"
+    },
+    {
+      "id": 2,
+      "name": "rank"
+    },
+    {
+      "id": 3,
+      "name": "score"
+    },
+    {
+      "id": 4,
+      "name": "song_name"
+    }
+  ],
+  "info": {
+    "year": 2026,
+    "version": "1.0",
+    "contributor": "Label Studio"
+  }
+}
