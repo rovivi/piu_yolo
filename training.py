@@ -7,7 +7,7 @@ def entrenar():
     # Entrenar
     model.train(
         data='data.yml',
-        epochs=100,      # Si ves que el "loss" deja de bajar, puedes pararlo antes
+        epochs=150,      # Si ves que el "loss" deja de bajar, puedes pararlo antes
         imgsz=1024,       # Resolución estándar
         device='mps',        # Usa la GPU si está disponible, si no, CPU
         batch=16,        # Ajusta según tu RAM

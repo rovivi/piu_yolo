@@ -1,4 +1,4 @@
-path: /home/rodrigo/entrenamiento_yolo/piu_yolo
+path: /Users/rvidalv/yolo/piu_yolo
 train: images
 val: images  # Por ahora usamos la misma para validar si tienes pocos datos
 
