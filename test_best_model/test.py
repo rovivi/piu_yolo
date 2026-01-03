@@ -3,9 +3,16 @@ import io
 import base64
 import cv2
 import numpy as np
+import torch
 from flask import Flask, render_template_string, request, jsonify
 from PIL import Image
 from ultralytics import YOLO
+
+# --- Environment Fixes (ROCm / AMD GPU) ---
+# For AMD 9750XT (gfx1031), we often need to override the version to gfx1030 
+# to ensure compatibility with available rocBLAS libraries.
+if not os.environ.get("HSA_OVERRIDE_GFX_VERSION"):
+    os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
 
 app = Flask(__name__)
 
@@ -18,12 +25,43 @@ if not os.path.exists(MODEL_PATH):
     if os.path.exists(fallback):
         MODEL_PATH = fallback
 
-try:
-    model = YOLO(MODEL_PATH)
-    class_names = model.names
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+print("-" * 50)
+print("PIU Part Detector - Startup")
+print(f"Torch Version: {torch.__version__}")
+print(f"CUDA/ROCm Available: {torch.cuda.is_available()}")
+
+device = "cpu"
+if torch.cuda.is_available():
+    try:
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_props = torch.cuda.get_device_properties(0)
+        print(f"Detected GPU: {gpu_name}")
+        if hasattr(gpu_props, 'gcn_arch_name'):
+            print(f"GPU Arch: {gpu_props.gcn_arch_name}")
+        device = "cuda"
+    except Exception as e:
+        print(f"Warning: GPU detected but failed to initialize: {e}")
+        print("Falling back to CPU mode.")
+        device = "cpu"
+
+print(f"Using Device: {device}")
+print("-" * 50)
+
+model = None
+class_names = {}
+
+if os.path.exists(MODEL_PATH):
+    try:
+        print(f"Loading model from: {MODEL_PATH}")
+        model = YOLO(MODEL_PATH)
+        # Move model to device
+        model.to(device)
+        class_names = model.names
+        print("Model loaded successfully.")
+    except Exception as e:
+        print(f"Critical Error loading model: {e}")
+else:
+    print(f"Error: Model not found at any expected path. Searched: {MODEL_PATH}")
 
 # --- HTML Template (Embedded for simplicity, with premium styling) ---
 HTML_TEMPLATE = """

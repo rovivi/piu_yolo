@@ -1,4 +1,4 @@
-path: /Users/rvidalv/yolo/piu_yolo
+path: /home/rodrigo/dev/python_projects/piu_yolo
 train: images
 val: images  # Por ahora usamos la misma para validar si tienes pocos datos
 
