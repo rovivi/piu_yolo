@@ -1,0 +1,236 @@
+import os
+import shutil
+import subprocess
+import threading
+import time
+import re
+from typing import List, Dict, Optional, Generator, Callable
+import cv2
+import torch
+from ultralytics import YOLO
+
+# Try to import yt_dlp for video downloading
+try:
+    import yt_dlp
+    HAS_YTDLP = True
+except ImportError:
+    HAS_YTDLP = False
+
+class VideoProcessor:
+    def __init__(self, output_dir="output_piu"):
+        self.output_dir = output_dir
+        os.makedirs(output_dir, exist_ok=True)
+
+    def download_url(self, url: str, progress_hook: Optional[Callable] = None) -> Dict:
+        """
+        Downloads video from URL using yt-dlp, limited to 720p.
+        """
+        if not HAS_YTDLP:
+            raise ImportError("yt_dlp library is missing.")
+
+        # Limit height to 720 to optimize speed/size
+        ydl_opts = {
+            'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]',
+            'outtmpl': os.path.join(self.output_dir, 'downloaded_video.%(ext)s'),
+            'progress_hooks': [progress_hook] if progress_hook else [],
+            'quiet': True,
+            'no_warnings': True,
+            'overwrites': True  # Overwrite existing files
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            # Metadata fetch
+            try:
+                info_meta = ydl.extract_info(url, download=False)
+            except Exception as e:
+                print(f"Warning: Could not fetch metadata: {e}")
+                info_meta = {}
+
+            # Download
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+
+            return {
+                "path": filename,
+                "title": info_meta.get('title', 'Unknown Title'),
+                "uploader": info_meta.get('uploader', 'Unknown Author'),
+                "duration": info_meta.get('duration', 0),
+                "thumbnail": info_meta.get('thumbnail', None)
+            }
+
+    def extract_frames(self, video_path: str, progress_callback: Optional[Callable] = None) -> List[str]:
+        """
+        Extracts frames using ffmpeg.
+        Optimization: Threads=auto, FPS=2/3 (one frame every 1.5s).
+        Reads stderr to provide real-time frame count.
+        """
+        frames_dir = os.path.join(self.output_dir, "raw_frames")
+        if os.path.exists(frames_dir):
+            shutil.rmtree(frames_dir)
+        os.makedirs(frames_dir)
+
+        if shutil.which("ffmpeg") is None:
+            raise RuntimeError("ffmpeg not found in system PATH.")
+
+        output_pattern = os.path.join(frames_dir, "frame_%04d.jpg")
+
+        # fps=2/3 means 2 frames every 3 seconds -> ~0.666 fps -> 1 frame every 1.5s
+        cmd = [
+            "ffmpeg",
+            "-threads", "0",     # Let ffmpeg choose max threads (all cores)
+            "-i", video_path,
+            "-vf", "fps=2/3",    # One frame every 1.5 seconds
+            "-q:v", "2",         # High quality jpeg
+            "-progress", "pipe:1", # Output progress to stdout for easier parsing
+            output_pattern
+        ]
+        
+        # We invoke ffmpeg without 'pipe:1' for progress usually, but standard stderr parsing is more reliable for 'frame='
+        # Let's revert to standard stderr parsing.
+        cmd = [
+             "ffmpeg",
+            "-threads", "0",
+            "-i", video_path,
+            "-vf", "fps=2/3",
+            "-q:v", "2",
+            output_pattern
+        ]
+
+        if progress_callback:
+            progress_callback(0, 100, "Initializing ffmpeg...")
+
+        # Run ffmpeg with stderr pipe
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True)
+        
+        # Estimate total frames if possible (not easy accurately without duration check)
+        # We will just report "Frames Extracted: X"
+        
+        frames_extracted = 0
+        
+        while True:
+            # Read line by line
+            line = process.stderr.readline()
+            if not line and process.poll() is not None:
+                break
+            
+            if line:
+                # Look for "frame=  123"
+                match = re.search(r"frame=\s*(\d+)", line)
+                if match:
+                    current_frame = int(match.group(1))
+                    if current_frame > frames_extracted:
+                        frames_extracted = current_frame
+                        if progress_callback:
+                            progress_callback(0, 0, f"Extracting frames... Count: {frames_extracted}")
+                            
+        if process.returncode != 0:
+             # Check if it was just a warning or fatal
+             pass 
+
+        # Collect paths
+        frames = sorted([
+            os.path.join(frames_dir, f)
+            for f in os.listdir(frames_dir)
+            if f.endswith(".jpg")
+        ])
+        return frames
+
+class FrameAnalyzer:
+    def __init__(self, model_path: str):
+        self.model = YOLO(model_path)
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model.to(self.device)
+        print(f"Analyzer initialized on {self.device}")
+        
+        self.stop_requested = False
+
+    def analyze_stream(self, image_paths: List[str], conf=0.4, iou=0.7) -> Generator[Dict, None, None]:
+        """
+        Analyzes a sequence of images.
+        Yields 'events' (best frame) as they are found.
+        
+        Strict Logic: 
+        - Event candidate MUST have 'score' AND 'fullscore'.
+        - Best Frame within window MUST also have 'score' AND 'fullscore'.
+        """
+        
+        FRAME_INTERVAL = 1.5 
+        EVENT_WINDOW_SEC = 10.0
+        SKIP_WINDOW_SEC = 30.0
+        
+        FRAMES_IN_EVENT = int(EVENT_WINDOW_SEC / FRAME_INTERVAL) # ~6-7 frames
+        FRAMES_TO_SKIP = int(SKIP_WINDOW_SEC / FRAME_INTERVAL)   # ~20 frames
+        
+        i = 0
+        total_frames = len(image_paths)
+        
+        # Batch size could optimize, but generator pattern is sequential
+        
+        while i < total_frames:
+            if self.stop_requested:
+                break
+                
+            path = image_paths[i]
+            
+            try:
+                # Quick check first frame
+                results = self.model.predict(path, conf=conf, iou=iou, verbose=False)
+                detections = results[0]
+                
+                class_names = [self.model.names[int(box.cls[0])] for box in detections.boxes]
+                
+                # STRICT check for Trigger
+                if "fullscore" in class_names and "score" in class_names:
+                    
+                    # START SEARCH WINDOW
+                    # We are in an event. We want the best frame in the next FRAMES_IN_EVENT.
+                    
+                    best_frame_data = None
+                    max_conf = -1.0
+                    
+                    end_scan = min(i + FRAMES_IN_EVENT, total_frames)
+                    
+                    # Iterate window (including current 'i')
+                    for j in range(i, end_scan):
+                        p_curr = image_paths[j]
+                        
+                        # We need to predict again if j != i (or cache 'i' result)
+                        if j == i:
+                            res = results
+                        else:
+                            res = self.model.predict(p_curr, conf=conf, iou=iou, verbose=False)
+                        
+                        det = res[0]
+                        c_names = [self.model.names[int(b.cls[0])] for b in det.boxes]
+                        
+                        # STRICT Check for Best Frame Candidate
+                        if "fullscore" in c_names and "score" in c_names:
+                            # Calculate score (sum of confidences or mean?)
+                            # Sum is good: higher confidence on both boxes = better
+                            curr_conf = sum([float(b.conf[0]) for b in det.boxes])
+                            
+                            if curr_conf > max_conf:
+                                max_conf = curr_conf
+                                best_frame_data = {
+                                    "path": p_curr,
+                                    "index": j,
+                                    "score": curr_conf
+                                }
+                    
+                    # Did we find a valid best frame?
+                    if best_frame_data:
+                        yield best_frame_data
+                        # Jump ahead from the found best frame + skip
+                        i = best_frame_data["index"] + FRAMES_TO_SKIP
+                    else:
+                        # Found a trigger but no "better" subsequent frame (or all failed strict check?)
+                        # If trigger passed strict check, then 'i' itself should have been caught as best_frame_data at least.
+                        # So this else block is rare.
+                        i += 1
+                        
+                    continue
+            
+            except Exception as e:
+                print(f"Error analyzing frame {path}: {e}")
+            
+            i += 1
