@@ -440,20 +440,74 @@ class PIUApp(ctk.CTk):
         # Create Toplevel
         top = ctk.CTkToplevel(self)
         top.title(f"Preview: {os.path.basename(path)}")
-        top.geometry("900x600")
+        top.geometry("950x750")
+        top.configure(fg_color=COLOR_BG_DARK)
+        top.after(100, lambda: top.focus_set()) # Ensure it comes to front
+
+        # Layout
+        left_panel = ctk.CTkFrame(top, fg_color="transparent")
+        left_panel.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+        right_panel = ctk.CTkFrame(top, width=250, fg_color=COLOR_BG_CARD)
+        right_panel.pack(side="right", fill="y", padx=10, pady=10)
         
+        # Image Display
         try:
             img = Image.open(path)
             # Resize logic for display
-            display_w, display_h = 880, 550
+            display_w, display_h = 650, 600
             ratio = min(display_w/img.width, display_h/img.height)
             new_size = (int(img.width*ratio), int(img.height*ratio))
             
             tk_img = ctk.CTkImage(img, size=new_size)
-            lbl = ctk.CTkLabel(top, image=tk_img, text="")
-            lbl.pack(fill="both", expand=True, padx=10, pady=10)
+            lbl = ctk.CTkLabel(left_panel, image=tk_img, text="")
+            lbl.pack(fill="both", expand=True)
         except Exception as e:
-            ctk.CTkLabel(top, text=f"Error loading image: {e}").pack()
+            ctk.CTkLabel(left_panel, text=f"Error loading image: {e}").pack()
+
+        # OCR Panel
+        ctk.CTkLabel(right_panel, text="OCR DATA", font=("Roboto", 16, "bold"), text_color=COLOR_ACCENT).pack(pady=20)
+        
+        ocr_container = ctk.CTkFrame(right_panel, fg_color="transparent")
+        ocr_container.pack(fill="both", expand=True, padx=10)
+
+        lbl_ocr_status = ctk.CTkLabel(ocr_container, text="Running OCR...", font=("Roboto Mono", 11), text_color="gray")
+        lbl_ocr_status.pack(pady=10)
+
+        def run_ocr_logic():
+            if not self.analyzer:
+                self.after(0, lambda: lbl_ocr_status.configure(text="Analyzer not ready", text_color=COLOR_ERROR))
+                return
+
+            try:
+                results = self.analyzer.perform_ocr(path)
+                
+                def update_ui():
+                    lbl_ocr_status.pack_forget()
+                    
+                    # Song Name
+                    ctk.CTkLabel(ocr_container, text="SONG:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
+                    song = results.get("song_name", "Not detected")
+                    song_lbl = ctk.CTkLabel(ocr_container, text=song, font=("Roboto", 14, "bold"), wraplength=220)
+                    song_lbl.pack(anchor="w", pady=(0,10))
+                    
+                    # Score
+                    ctk.CTkLabel(ocr_container, text="SCORE:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
+                    score = results.get("score", "Not detected")
+                    score_lbl = ctk.CTkLabel(ocr_container, text=score, font=("Roboto Mono", 24, "bold"), text_color=COLOR_SUCCESS)
+                    score_lbl.pack(anchor="w", pady=(0,10))
+                    
+                    # Rank
+                    if "rank" in results:
+                        ctk.CTkLabel(ocr_container, text="RANK:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
+                        rank_lbl = ctk.CTkLabel(ocr_container, text=results["rank"], font=("Roboto Mono", 18, "bold"), text_color=COLOR_WARNING)
+                        rank_lbl.pack(anchor="w", pady=(0,10))
+
+                self.after(0, update_ui)
+            except Exception as e:
+                self.after(0, lambda: lbl_ocr_status.configure(text=f"OCR Error: {e}", text_color=COLOR_ERROR))
+
+        threading.Thread(target=run_ocr_logic, daemon=True).start()
 
     def _log(self, msg):
         ts = datetime.datetime.now().strftime("%H:%M:%S")

@@ -8,6 +8,7 @@ from typing import List, Dict, Optional, Generator, Callable
 import cv2
 import torch
 from ultralytics import YOLO
+import easyocr
 
 # Try to import yt_dlp for video downloading
 try:
@@ -173,7 +174,58 @@ class FrameAnalyzer:
                 
         print(f"Analyzer initialized on {self.device} | {self.gpu_name}")
         
+
         self.stop_requested = False
+        
+        # Initialize OCR Reader (supports English numbers and latin characters)
+        try:
+            self.ocr_reader = easyocr.Reader(['en'], gpu=torch.cuda.is_available())
+            print("OCR Reader initialized.")
+        except Exception as e:
+            print(f"Warning: OCR Reader failed to initialize: {e}")
+            self.ocr_reader = None
+
+    def perform_ocr(self, image_path: str) -> Dict[str, str]:
+        """
+        Runs YOLO to find regions, then OCR on those regions.
+        """
+        if not self.ocr_reader:
+            return {}
+
+        img = cv2.imread(image_path)
+        if img is None:
+            return {}
+
+        results = self.model.predict(img, conf=0.3, verbose=False)[0]
+        ocr_data = {}
+
+        for box in results.boxes:
+            cls_idx = int(box.cls[0])
+            cls_name = self.model.names[cls_idx]
+            
+            # Target classes for OCR
+            if cls_name in ["score", "song_name", "song_title", "rank"]:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                # Add small padding
+                h, w = img.shape[:2]
+                pad = 3
+                x1, y1 = max(0, x1-pad), max(0, y1-pad)
+                x2, y2 = min(w, x2+pad), min(h, y2+pad)
+                
+                crop = img[y1:y2, x1:x2]
+                
+                try:
+                    # easyocr.readtext returns list of (bbox, text, confidence)
+                    detected_text = self.ocr_reader.readtext(crop, detail=0)
+                    if detected_text:
+                        combined_text = " ".join(detected_text).strip()
+                        # Use a canonical key for the dictionary
+                        key = "song_name" if cls_name in ["song_name", "song_title"] else cls_name
+                        ocr_data[key] = combined_text
+                except Exception as e:
+                    print(f"OCR error on {cls_name}: {e}")
+
+        return ocr_data
 
     def analyze_stream(self, image_paths: List[str], conf=0.4, iou=0.7) -> Generator[Dict, None, None]:
         """
