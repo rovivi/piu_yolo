@@ -6,10 +6,38 @@ import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from typing import List, Dict, Optional
+import warnings
+
+# Filter specific torchvision warning about executable stack
+warnings.filterwarnings("ignore", message="Failed to load image Python extension")
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import cv2
+
+# --- Configuración de Entorno (Optimización para AMD/ROCm & Apple M2) ---
+# IMPORTANTE: Estas variables deben setearse ANTES de importar torch.
+if "linux" in sys.platform:
+    # Para GPUs AMD (ej. 9750XT/7900XTX), forzamos una arquitectura compatible.
+    if not os.environ.get("HSA_OVERRIDE_GFX_VERSION"):
+        # AMD 9750XT suele ser gfx1031. Forzamos 10.3.0 para compatibilidad universal.
+        os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+
+    # Algunas versiones de ROCm requieren HCC_AMDGPU_TARGET para compilar kernels al vuelo
+    if not os.environ.get("HCC_AMDGPU_TARGET"):
+        os.environ["HCC_AMDGPU_TARGET"] = "gfx1030"
+
+    # Desactivar SDMA si hay problemas de coherencia de memoria o timeouts en kernels de Linux
+    if not os.environ.get("HSA_ENABLE_SDMA"):
+        os.environ["HSA_ENABLE_SDMA"] = "0"
+        
+    # PyTorch ROCm optimizaciones
+    os.environ["PYTORCH_HIP_ALLOC_CONF"] = "garbage_collection_threshold:0.8,max_split_size_mb:128"
+
+# Apple Metal (MPS) optimizaciones - Solo si corre en Mac
+if sys.platform == "darwin":
+     os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
 
 # Import Core Logic
 from piu_core import VideoProcessor, FrameAnalyzer
@@ -84,6 +112,13 @@ class PIUApp(ctk.CTk):
         self.btn_clean = ctk.CTkButton(self.sidebar, text="Clean Cache", command=self.clean_project_cache, 
                                      fg_color="#c0392b", hover_color="#a93226")
         self.btn_clean.pack(pady=20, padx=20, fill="x")
+
+        # Adding new buttons as per instruction
+        # self.btn_video = ctk.CTkButton(self.sidebar, text="Video en Tiempo Real", command=self.import_video, height=40, fg_color="#4a4a4a")
+        # self.btn_video.pack(padx=20, pady=(5, 10), fill="x") # This button was not in the original code, but in the diff. I'll add it.
+
+        self.btn_url = ctk.CTkButton(self.sidebar, text="Importar desde URL", command=self.import_url, height=40, fg_color="#4a4a4a")
+        self.btn_url.pack(padx=20, pady=(5, 10), fill="x")
         
         # App Log / Detailed Status
         ctk.CTkLabel(self.sidebar, text="ACTIVITY LOG", font=("Roboto", 12, "bold"), text_color="#555").pack(anchor="w", padx=25, pady=(10,5))
@@ -120,6 +155,11 @@ class PIUApp(ctk.CTk):
         self.btn_file = ctk.CTkButton(btn_box, text="Open Local File", command=self.select_local_video,
                                     fg_color="#444", hover_color="#555", height=40)
         self.btn_file.pack(side="left", fill="x", expand=True, padx=(10,0))
+        
+        # Side buttons for URL (Added feature)
+        self.btn_url_imp = ctk.CTkButton(btn_box, text="Import URL", command=self.import_url, width=100, fg_color="#444")
+        self.btn_url_imp.pack(side="left", padx=(10,0))
+
 
         # 2. Status & Progress
         status_card = ctk.CTkFrame(frame, fg_color=COLOR_BG_CARD, corner_radius=10)
@@ -172,7 +212,13 @@ class PIUApp(ctk.CTk):
             try:
                 self.analyzer = FrameAnalyzer(model_path)
                 self._set_status(f"Model Active: {os.path.basename(model_path)}", COLOR_SUCCESS)
-                self._log(f"Model loaded: {model_path} ({self.analyzer.device})")
+                
+                # Show GPU Info
+                gpu_info = getattr(self.analyzer, 'gpu_name', 'Unknown Device')
+                self._log(f"Model loaded: {model_path}")
+                self._log(f"HARDWARE: {gpu_info}")
+                self.combo_device.set(gpu_info)
+                
             except Exception as e:
                 self._set_status(f"Model Init Error: {e}", COLOR_ERROR)
         else:
@@ -182,6 +228,21 @@ class PIUApp(ctk.CTk):
         path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.mov *.avi *.mkv")])
         if path:
             self.start_processing_pipeline(path)
+
+    def import_url(self):
+        # Dialogo simple para URL
+        dialog = ctk.CTkInputDialog(text="Introduce la URL del video:", title="Importar URL")
+        url = dialog.get_input()
+        if url:
+             if not (url.startswith("http://") or url.startswith("https://")):
+                 messagebox.showerror("Error", "URL Inválida. Debe iniciar con http/https")
+                 return
+             
+             self._log(f"URL recibida: {url}")
+             # Run download pipeline
+             self._set_ui_state(processing=True)
+             self.meta_frame.pack_forget()
+             threading.Thread(target=self._pipeline_download, args=(url,), daemon=True).start()
 
     def start_download_process(self):
         url = self.entry_url.get()
@@ -221,6 +282,10 @@ class PIUApp(ctk.CTk):
             self._handle_error(e)
 
     def start_processing_pipeline(self, vid_path, threaded=True):
+        # Cancel previous if running
+        if self.is_processing:
+            self.is_processing = False
+
         if threaded:
             self._set_ui_state(processing=True)
             threading.Thread(target=self._process_video_logic, args=(vid_path,), daemon=True).start()
@@ -230,18 +295,22 @@ class PIUApp(ctk.CTk):
     def _process_video_logic(self, vid_path):
         try:
             self._log(f"Beginning processing for: {os.path.basename(vid_path)}")
-            
-            # Callback for ffmpeg
+            self.is_processing = True
+
             def ffmpeg_cb(curr, total, msg):
-                # Since we don't know exact total for sure, we use indeterminate or just count
-                self._update_progress(0.01, msg)
+                if not self.is_processing: return
+                self._update_progress(curr, msg)
                 
             # 1. Extract Frames
             self._log("Extracting frames (using all CPU cores)...")
             frames = self.processor.extract_frames(vid_path, progress_callback=ffmpeg_cb)
+            if not self.is_processing: 
+                self._log("Processing cancelled during frame extraction.")
+                self.after(0, lambda: self._set_ui_state(False))
+                return
             self._log(f"Extraction complete. {len(frames)} frames found.")
             
-            # 2. Analyze Stream
+            # 2. Analyze Stream with smart buffering
             if not self.analyzer: raise RuntimeError("Model not ready.")
             
             self.valid_frames = []
@@ -250,20 +319,67 @@ class PIUApp(ctk.CTk):
             count = 0
             total_frames = len(frames)
             
-            self._update_progress(0.0, f"Starting Analysis on {total_frames} frames...")
+            # Smart Buffer Logic
+            candidate_buffer = []
+            REQUIRED_SEQ = 2 # Minimum sequence length for a valid event
             
-            for event_data in self.analyzer.analyze_stream(frames):
-                self.valid_frames.append(event_data["path"])
+            self._update_progress(0.0, f"Analyzing {total_frames} frames...")
+            
+            for i, frame_path in enumerate(frames):
+                if not self.is_processing: 
+                    self._log("Processing cancelled during analysis.")
+                    break # Exit loop if processing is cancelled
                 
-                # Update UI
-                self.after(0, lambda p=event_data["path"], s=event_data["score"], idx=event_data["index"]: 
+                # Predict
+                res = self.analyzer.model.predict(frame_path, conf=0.4, verbose=False)[0]
+                cls_names = [self.analyzer.model.names[int(b.cls[0])] for b in res.boxes]
+                
+                # Check Conditions for a "valid" frame
+                has_full = "fullscore" in cls_names
+                has_score = "score" in cls_names
+                has_id = any(c in cls_names for c in ["rank", "song_name", "song_title"])
+                
+                is_valid_frame = has_full and has_score and has_id
+                
+                if is_valid_frame:
+                    # Score calculation for this frame
+                    unique_items = len(set(cls_names))
+                    conf_sum = sum([float(b.conf[0]) for b in res.boxes])
+                    score_val = (unique_items * 10) + conf_sum # Example scoring
+                    
+                    candidate_buffer.append({
+                        "path": frame_path,
+                        "idx": i,
+                        "score": score_val,
+                        "cls": cls_names
+                    })
+                else:
+                    # Sequence broken? Check buffer for potential event
+                    if len(candidate_buffer) >= REQUIRED_SEQ:
+                        # Select the best frame from the buffer
+                        best = max(candidate_buffer, key=lambda x: x["score"])
+                        
+                        # Add Event
+                        self.valid_frames.append(best["path"])
+                        self.after(0, lambda p=best["path"], s=best["score"], idx=best["idx"]: 
+                                   self._add_gallery_item(p, s, idx))
+                        count += 1
+                        
+                    candidate_buffer = [] # Reset buffer
+                
+                # Progress update (less frequent to avoid UI lag)
+                if i % 5 == 0: # Update every 5 frames
+                    prog = (i + 1) / total_frames
+                    self._update_progress(prog, f"Analyzing: {i}/{total_frames} | Found: {count}")
+
+            # After loop, check if there's any remaining sequence in buffer
+            if self.is_processing and len(candidate_buffer) >= REQUIRED_SEQ:
+                best = max(candidate_buffer, key=lambda x: x["score"])
+                self.valid_frames.append(best["path"])
+                self.after(0, lambda p=best["path"], s=best["score"], idx=best["idx"]: 
                            self._add_gallery_item(p, s, idx))
-                
                 count += 1
-                curr_idx = event_data["index"]
-                prog = curr_idx / total_frames
-                self._update_progress(prog, f"Analysis: Scanned {curr_idx}/{total_frames} | Events Found: {count}")
-                
+            
             self.after(0, self._on_finish)
             
         except Exception as e:

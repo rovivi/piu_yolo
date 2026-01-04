@@ -73,6 +73,26 @@ class VideoProcessor:
             raise RuntimeError("ffmpeg not found in system PATH.")
 
         output_pattern = os.path.join(frames_dir, "frame_%04d.jpg")
+        
+        # Calculate approximate total frames to output
+        total_input_frames = 0
+        try:
+            cap = cv2.VideoCapture(video_path)
+            if cap.isOpened():
+                total_input_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                if fps > 0:
+                    # FPS ratio: output_fps / input_fps
+                    # output_fps = 2/3 = 0.6666
+                    ratio = (2.0/3.0) / fps
+                    estimated_output = int(total_input_frames * ratio)
+                else:
+                    estimated_output = 100 # Fallback
+            else:
+                estimated_output = 100
+            cap.release()
+        except:
+            estimated_output = 100
 
         # fps=2/3 means 2 frames every 3 seconds -> ~0.666 fps -> 1 frame every 1.5s
         cmd = [
@@ -97,13 +117,10 @@ class VideoProcessor:
         ]
 
         if progress_callback:
-            progress_callback(0, 100, "Initializing ffmpeg...")
+            progress_callback(0, 100, f"Initializing extraction (Est. {estimated_output} frames)...")
 
         # Run ffmpeg with stderr pipe
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True)
-        
-        # Estimate total frames if possible (not easy accurately without duration check)
-        # We will just report "Frames Extracted: X"
         
         frames_extracted = 0
         
@@ -121,7 +138,8 @@ class VideoProcessor:
                     if current_frame > frames_extracted:
                         frames_extracted = current_frame
                         if progress_callback:
-                            progress_callback(0, 0, f"Extracting frames... Count: {frames_extracted}")
+                            percent = min(0.99, frames_extracted / estimated_output)
+                            progress_callback(percent, 0, f"Extracting: {frames_extracted}/{estimated_output}")
                             
         if process.returncode != 0:
              # Check if it was just a warning or fatal
@@ -140,7 +158,20 @@ class FrameAnalyzer:
         self.model = YOLO(model_path)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(self.device)
-        print(f"Analyzer initialized on {self.device}")
+        self.gpu_name = f"Mode: {self.device.upper()}"
+        
+        if self.device == "cuda":
+            try:
+                name = torch.cuda.get_device_name(0)
+                is_rocm = hasattr(torch.version, 'hip') and torch.version.hip is not None
+                if is_rocm:
+                    self.gpu_name = f"AMD GPU: {name} (ROCm {torch.version.hip})"
+                else:
+                    self.gpu_name = f"NVIDIA GPU: {name} (CUDA {torch.version.cuda})"
+            except:
+                pass
+                
+        print(f"Analyzer initialized on {self.device} | {self.gpu_name}")
         
         self.stop_requested = False
 
