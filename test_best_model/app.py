@@ -4,9 +4,27 @@ import time
 import threading
 import datetime
 import json
-import torch  # <--- Esta era la linea que faltaba
 import numpy as np
-import customtkinter as ctk
+
+# --- Configuración de Entorno (Optimización para AMD/ROCm) ---
+# IMPORTANTE: Estas variables deben setearse ANTES de importar torch.
+# Para GPUs AMD (ej. 9750XT/7900XTX), forzamos una arquitectura compatible.
+if not os.environ.get("HSA_OVERRIDE_GFX_VERSION"):
+    # AMD 9750XT suele ser gfx1031. Forzamos 10.3.0 para compatibilidad universal.
+    os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+
+# Algunas versiones de ROCm requieren HCC_AMDGPU_TARGET para compilar kernels al vuelo
+if not os.environ.get("HCC_AMDGPU_TARGET"):
+    os.environ["HCC_AMDGPU_TARGET"] = "gfx1030"
+
+# Desactivar SDMA si hay problemas de coherencia de memoria o timeouts en kernels de Linux
+if not os.environ.get("HSA_ENABLE_SDMA"):
+    os.environ["HSA_ENABLE_SDMA"] = "0"
+
+# Verificación de pre-carga
+print(f"[DEBUG] HSA_OVERRIDE_GFX_VERSION set to: {os.environ.get('HSA_OVERRIDE_GFX_VERSION')}")
+
+import torch
 from PIL import Image, ImageTk
 from ultralytics import YOLO
 from tkinter import filedialog, messagebox
@@ -22,9 +40,7 @@ except ImportError:
         class DnDWrapper: pass
     HAS_DND = False
 
-# --- Configuración de Entorno ---
-if not os.environ.get("HSA_OVERRIDE_GFX_VERSION"):
-    os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
+import customtkinter as ctk
 
 # Tema Visual
 ctk.set_appearance_mode("Dark")
@@ -190,14 +206,52 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
     def init_backend(self):
         # Hardware Check
         self.device = "cpu"
-        if torch.cuda.is_available():
-            try:
-                name = torch.cuda.get_device_name(0)
+        self.log("--- Iniciando Diagnóstico de Hardware ---")
+        
+        try:
+            # Info básica
+            self.log(f"PyTorch Version: {torch.__version__}")
+            is_rocm = hasattr(torch.version, 'hip') and torch.version.hip is not None
+            
+            if is_rocm:
+                self.log(f"Build: ROCm/HIP Detected (Version: {torch.version.hip})")
+            else:
+                self.log(f"Build: standard/CUDA Build (CUDA: {getattr(torch.version, 'cuda', 'N/A')})")
+
+            # Intentar ver si ROCm detecta el hardware a pesar del available=False
+            device_count = torch.cuda.device_count()
+            self.log(f"GPUs detectadas por PyTorch: {device_count}")
+
+            if torch.cuda.is_available():
                 self.device = "cuda"
-                self.lbl_device.configure(text=f"GPU: {name} (CUDA)", text_color=COLOR_SUCCESS)
-            except: pass
-        else:
-            self.lbl_device.configure(text="Running on CPU", text_color=COLOR_WARNING)
+                name = torch.cuda.get_device_name(0)
+                props = torch.cuda.get_device_properties(0)
+                arch = getattr(props, 'gcn_arch_name', 'N/A')
+                
+                if is_rocm:
+                    status_text = f"GPU: {name} ({arch}) | ROCm {torch.version.hip}"
+                    self.lbl_device.configure(text=status_text, text_color=COLOR_SUCCESS)
+                    self.log(f"AMD GPU OPERATIVA: {name} ({arch})")
+                else:
+                    status_text = f"GPU: {name} | CUDA {torch.version.cuda}"
+                    self.lbl_device.configure(text=status_text, text_color=COLOR_SUCCESS)
+                    self.log(f"NVIDIA GPU OPERATIVA: {name}")
+            else:
+                self.lbl_device.configure(text="MODO CPU (No GPU detectada)", text_color=COLOR_WARNING)
+                self.log("ALERTA: torch.cuda.is_available() es FALSE")
+                if is_rocm:
+                    self.log("Tip: Verifica que los drivers ROCm estén cargados y el usuario esté en el grupo 'render'/'video'")
+                else:
+                    self.log("Tip: Estás usando un build de PyTorch sin soporte para AMD. Reinstala con soporte ROCm.")
+                
+            # Log de overrides activos
+            self.log(f"HSA_OVERRIDE_GFX_VERSION: {os.environ.get('HSA_OVERRIDE_GFX_VERSION', 'None')}")
+            self.log(f"HSA_ENABLE_SDMA: {os.environ.get('HSA_ENABLE_SDMA', 'None')}")
+            self.log("-----------------------------------------")
+            
+        except Exception as e:
+            self.log(f"Error crítico en init_backend: {e}")
+            self.lbl_device.configure(text="Hardware Error", text_color="#ff4444")
 
         # Cargar Modelo
         threading.Thread(target=self._load_model_thread, daemon=True).start()
