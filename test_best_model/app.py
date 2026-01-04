@@ -30,6 +30,7 @@ from ultralytics import YOLO
 from tkinter import filedialog, messagebox
 
 # Intentar importar Drag & Drop, fallback si falla
+
 try:
     from tkinterdnd2 import TkinterDnD, DND_ALL
     HAS_DND = True
@@ -39,6 +40,14 @@ except ImportError:
     class TkinterDnD:
         class DnDWrapper: pass
     HAS_DND = False
+
+# Audio Support
+try:
+    from ffpyplayer.player import MediaPlayer
+    print("Audio support enabled (ffpyplayer).")
+except ImportError:
+    MediaPlayer = None
+    print("Warning: ffpyplayer not found. Audio will be disabled.")
 
 import customtkinter as ctk
 
@@ -83,12 +92,20 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         
         # Video State
         self.video_playing = False
+        self.paused = False
+        self.manual_seek = False # Flag para evitar conflictos al mover slider
         self.seek_to_frame = -1
         self.total_frames = 0
         self.fps_video = 30
+        self.media_player = None # Audio Player
         
         self.init_ui()
         self.init_backend()
+
+        # Key Bindings
+        self.bind("<space>", self.toggle_pause)
+        self.bind("<Left>", lambda e: self.step_frame(-1))
+        self.bind("<Right>", lambda e: self.step_frame(1))
 
     def init_ui(self):
         """Construye la interfaz compleja"""
@@ -162,9 +179,16 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         self.video_controls = ctk.CTkFrame(self.main_view, fg_color="transparent")
         self.video_controls.pack(side="bottom", fill="x", padx=20, pady=10)
         
+        # Boton Play/Pause
+        self.btn_play = ctk.CTkButton(self.video_controls, text="⏸", width=40, height=40, 
+                                      font=("Roboto", 20), fg_color="#444", command=self.toggle_pause)
+        self.btn_play.pack(side="left", padx=(0, 10))
+
         self.seek_slider = ctk.CTkSlider(self.video_controls, from_=0, to=100, command=self.on_seek)
         self.seek_slider.pack(side="left", fill="x", expand=True, padx=(0, 10))
         self.seek_slider.set(0)
+        self.seek_slider.bind("<Button-1>", self.on_slider_click)
+        self.seek_slider.bind("<ButtonRelease-1>", self.on_slider_release)
         
         self.lbl_time = ctk.CTkLabel(self.video_controls, text="00:00 / 00:00", font=("Roboto Mono", 11))
         self.lbl_time.pack(side="right")
@@ -502,6 +526,7 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         
         self.processing = True
         self.video_playing = True
+        self.paused = False
         self.seek_to_frame = -1
         
         # UI updates
@@ -510,6 +535,7 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         self.video_controls.pack(side="bottom", fill="x", padx=20, pady=10)
         self.seek_slider.configure(to=self.total_frames)
         self.seek_slider.set(0)
+        self.btn_play.configure(text="⏸")
         self.canvas_area.place_forget()
         
         self.log(f"Iniciando video: {os.path.basename(video_path)} ({self.total_frames} frames)")
@@ -518,6 +544,41 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
 
     def stop_video_processing(self):
         self.video_playing = False
+        if self.media_player:
+             self.media_player.close_player()
+             self.media_player = None
+
+        
+
+    def toggle_pause(self, event=None):
+        if not self.video_playing: return
+        self.paused = not self.paused
+        new_text = "▶" if self.paused else "⏸"
+        self.btn_play.configure(text=new_text)
+
+        # Sync audio pause
+        if self.media_player:
+            self.media_player.set_pause(self.paused)
+
+    def step_frame(self, direction):
+        if not self.video_playing or not self.paused: return
+        
+        current = int(self.seek_slider.get())
+        new_frame = current + direction
+        if 0 <= new_frame < self.total_frames:
+            self.seek_to_frame = new_frame # This signals the loop to seek
+
+    def on_slider_click(self, event):
+        self.manual_seek = True
+        self.was_paused_before_seek = self.paused
+        if not self.paused:
+            self.toggle_pause() # Pause while dragging
+            
+    def on_slider_release(self, event):
+        self.manual_seek = False
+        # Resume if it wasn't paused before
+        if not self.was_paused_before_seek and self.paused:
+            self.toggle_pause()
         
     def on_seek(self, value):
         self.seek_to_frame = int(value)
@@ -530,25 +591,68 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
             self.after(0, self._finish_video)
             return
 
+        # Start Audio
+        if MediaPlayer:
+            self.media_player = MediaPlayer(video_path)
+            
+        frame_interval = 1.0 / self.fps_video
         frame_count = 0
         last_res_plotted = None
         
         while self.video_playing and cap.isOpened():
+            # PAUSE LOGIC
+            if self.paused:
+                # Still check for seek requests
+                if self.seek_to_frame != -1:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, self.seek_to_frame)
+                    frame_count = self.seek_to_frame
+                    
+                    # Read single frame for update
+                    ret, frame = cap.read()
+                    if ret:
+                        # Process just this frame to show update
+                        results = self.model.predict(frame, verbose=False) # Skip thresh update for speed?
+                        res = results[0]
+                        last_res_plotted = res.plot()
+                        
+                        # Show
+                        color_img = cv2.cvtColor(last_res_plotted, cv2.COLOR_BGR2RGB)
+                        pil_img = Image.fromarray(color_img)
+                        self.after(0, lambda img=pil_img, cur=frame_count: self._update_video_frame(img, cur))
+
+                    if self.media_player:
+                        self.media_player.seek(self.seek_to_frame / self.fps_video, relative=False)
+                        self.media_player.set_pause(True) # Ensure kept paused
+                        
+                    self.seek_to_frame = -1
+                
+                time.sleep(0.1)
+                continue
+
+            loop_start = time.time()
+            
             # Handle seeking
             if self.seek_to_frame != -1:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self.seek_to_frame)
+                if self.media_player:
+                    self.media_player.seek(self.seek_to_frame / self.fps_video, relative=False)
                 frame_count = self.seek_to_frame
                 self.seek_to_frame = -1
 
             ret, frame = cap.read()
             if not ret:
                 break
-            
+                
+            # Keep Audio Player Alive & Sync Check
+            if self.media_player:
+                _v, _a = self.media_player.get_frame()
+
             frame_count += 1
             skip_rate = int(self.slider_skip.get())
             should_run = (skip_rate == 0) or (frame_count % (skip_rate + 1) == 0)
             
-            start_t = time.time()
+            # Processing time measurement for Stats ONLY
+            proc_start = time.time()
             
             if should_run or last_res_plotted is None:
                 conf = self.slider_conf.get()
@@ -560,24 +664,35 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
             else:
                 display_img = frame.copy()
                 cv2.putText(display_img, ".", (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-                last_res_plotted = display_img # Reuse for consistency? actually display_img is what we want
+                last_res_plotted = display_img 
 
             display_img = last_res_plotted
             
-            # FPS & Info
-            proc_time = time.time() - start_t
-            fps = 1.0 / (proc_time + 1e-6)
-            cv2.putText(display_img, f"FPS: {fps:.1f}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            # FPS calculation (Real processing fps)
+            proc_time = time.time() - proc_start
+            fps_disp = 1.0 / (proc_time + 1e-6)
+            cv2.putText(display_img, f"FPS: {fps_disp:.1f}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             
             # Update UI
             color_img = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
             pil_img = Image.fromarray(color_img)
             
-            # Update slider and frame
             self.after(0, lambda img=pil_img, cur=frame_count: self._update_video_frame(img, cur))
 
+            # --- SYNC LOCK ---
+            # Wait to match Video FPS
+            elapsed = time.time() - loop_start
+            wait_time = frame_interval - elapsed
+            if wait_time > 0:
+                time.sleep(wait_time)
+
+        if self.media_player:
+            self.media_player.close_player()
+            self.media_player = None
+            
         cap.release()
         self.after(0, self._finish_video)
+
 
     def _update_video_frame(self, pil_img, current_frame):
         if not self.video_playing: return
