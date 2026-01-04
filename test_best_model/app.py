@@ -65,6 +65,12 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         self.device = "cpu"
         self.processing = False
         
+        # Video State
+        self.video_playing = False
+        self.seek_to_frame = -1
+        self.total_frames = 0
+        self.fps_video = 30
+        
         self.init_ui()
         self.init_backend()
 
@@ -93,12 +99,27 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         
         self.slider_conf = self.create_slider("Confianza Min.", 0.4)
         self.slider_iou = self.create_slider("IoU Threshold", 0.7)
+        
+        # Slider para Frame Skip (0 a 10) - Enteros
+        frame_skip_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        frame_skip_frame.pack(fill="x", padx=20, pady=5)
+        
+        self.lbl_skip = ctk.CTkLabel(frame_skip_frame, text="Frame Skip: 0", anchor="w")
+        self.lbl_skip.pack(fill="x")
+        
+        self.slider_skip = ctk.CTkSlider(frame_skip_frame, from_=0, to=10, number_of_steps=10,
+                                         command=lambda v: self.lbl_skip.configure(text=f"Frame Skip: {int(v)}"))
+        self.slider_skip.set(0)
+        self.slider_skip.pack(fill="x", pady=5)
 
         # Botones de Acción
         ctk.CTkFrame(self.sidebar, height=2, fg_color="gray30").pack(fill="x", padx=10, pady=20)
         
         self.btn_import = ctk.CTkButton(self.sidebar, text="Importar Imágenes / Carpeta", command=self.import_files, height=40, fg_color="#4a4a4a")
-        self.btn_import.pack(padx=20, pady=10, fill="x")
+        self.btn_import.pack(padx=20, pady=5, fill="x")
+
+        self.btn_video = ctk.CTkButton(self.sidebar, text="Video en Tiempo Real", command=self.import_video, height=40, fg_color="#4a4a4a")
+        self.btn_video.pack(padx=20, pady=(5, 10), fill="x")
 
         self.btn_run_all = ctk.CTkButton(self.sidebar, text="ANALIZAR COLA COMPLETA", command=self.start_batch_processing, height=50, fg_color=COLOR_ACCENT, font=("Roboto", 14, "bold"))
         self.btn_run_all.pack(padx=20, pady=10, fill="x")
@@ -114,12 +135,24 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
         self.main_view = ctk.CTkFrame(self, fg_color="#101010")
         self.main_view.grid(row=1, column=1, sticky="nsew")
         
-        # Área de Drop
+        # Area de Drop
         self.canvas_area = ctk.CTkLabel(self.main_view, text="ARRASTRA IMÁGENES AQUÍ\n\n(O usa el botón importar)", font=("Roboto", 20), text_color="gray40")
         self.canvas_area.place(relx=0.5, rely=0.5, anchor="center")
         
         # Visor de Imagen Real (oculto al inicio)
         self.image_label = ctk.CTkLabel(self.main_view, text="")
+
+        # --- CONTROLES DE VIDEO (Seekbar) ---
+        self.video_controls = ctk.CTkFrame(self.main_view, fg_color="transparent")
+        self.video_controls.pack(side="bottom", fill="x", padx=20, pady=10)
+        
+        self.seek_slider = ctk.CTkSlider(self.video_controls, from_=0, to=100, command=self.on_seek)
+        self.seek_slider.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.seek_slider.set(0)
+        
+        self.lbl_time = ctk.CTkLabel(self.video_controls, text="00:00 / 00:00", font=("Roboto Mono", 11))
+        self.lbl_time.pack(side="right")
+        self.video_controls.pack_forget() # Oculto hasta que haya video
         
         # Habilitar Drop en el área principal
         if HAS_DND:
@@ -393,6 +426,137 @@ class PIUAnalyticsPro(ctk.CTk, TkinterDnD.DnDWrapper):
                 bar_width = min(count * 20, 150) # Escala visual
                 bar = ctk.CTkFrame(frame, width=bar_width, height=10, fg_color=COLOR_SUCCESS)
                 bar.pack(side="left", padx=5)
+
+    # --- Video Real-time ---
+    def import_video(self):
+        file = filedialog.askopenfilename(filetypes=[("Video", "*.mp4 *.avi *.mov *.mkv")])
+        if file:
+            self.start_video_processing(file)
+
+    def start_video_processing(self, video_path):
+        if self.processing: return
+        self.stop_video_processing()
+        
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            self.log("Error al abrir video")
+            return
+            
+        self.total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fps_video = cap.get(cv2.CAP_PROP_FPS)
+        cap.release()
+        
+        self.processing = True
+        self.video_playing = True
+        self.seek_to_frame = -1
+        
+        # UI updates
+        self.btn_run_all.configure(state="disabled")
+        self.btn_video.configure(text="DETENER VIDEO", fg_color=COLOR_WARNING, command=self.stop_video_processing)
+        self.video_controls.pack(side="bottom", fill="x", padx=20, pady=10)
+        self.seek_slider.configure(to=self.total_frames)
+        self.seek_slider.set(0)
+        self.canvas_area.place_forget()
+        
+        self.log(f"Iniciando video: {os.path.basename(video_path)} ({self.total_frames} frames)")
+        
+        threading.Thread(target=self._process_video_thread, args=(video_path,), daemon=True).start()
+
+    def stop_video_processing(self):
+        self.video_playing = False
+        
+    def on_seek(self, value):
+        self.seek_to_frame = int(value)
+
+    def _process_video_thread(self, video_path):
+        cap = cv2.VideoCapture(video_path)
+        
+        if not cap.isOpened():
+            self.log("Error en hilo de video")
+            self.after(0, self._finish_video)
+            return
+
+        frame_count = 0
+        last_res_plotted = None
+        
+        while self.video_playing and cap.isOpened():
+            # Handle seeking
+            if self.seek_to_frame != -1:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, self.seek_to_frame)
+                frame_count = self.seek_to_frame
+                self.seek_to_frame = -1
+
+            ret, frame = cap.read()
+            if not ret:
+                break
+            
+            frame_count += 1
+            skip_rate = int(self.slider_skip.get())
+            should_run = (skip_rate == 0) or (frame_count % (skip_rate + 1) == 0)
+            
+            start_t = time.time()
+            
+            if should_run or last_res_plotted is None:
+                conf = self.slider_conf.get()
+                iou = self.slider_iou.get()
+                results = self.model.predict(frame, conf=conf, iou=iou, verbose=False)
+                res = results[0]
+                last_res_plotted = res.plot()
+                cv2.putText(last_res_plotted, "INF", (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            else:
+                display_img = frame.copy()
+                cv2.putText(display_img, ".", (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+                last_res_plotted = display_img # Reuse for consistency? actually display_img is what we want
+
+            display_img = last_res_plotted
+            
+            # FPS & Info
+            proc_time = time.time() - start_t
+            fps = 1.0 / (proc_time + 1e-6)
+            cv2.putText(display_img, f"FPS: {fps:.1f}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
+            # Update UI
+            color_img = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(color_img)
+            
+            # Update slider and frame
+            self.after(0, lambda img=pil_img, cur=frame_count: self._update_video_frame(img, cur))
+
+        cap.release()
+        self.after(0, self._finish_video)
+
+    def _update_video_frame(self, pil_img, current_frame):
+        if not self.video_playing: return
+        
+        # Update Seekbar without triggering command if possible 
+        # (Standard CTkSlider doesn't have a silent set, but we handle it by flag if needed)
+        # For simple seek, we just set it.
+        self.seek_slider.set(current_frame)
+        
+        # Update Time Label
+        cur_sec = int(current_frame / self.fps_video)
+        tot_sec = int(self.total_frames / self.fps_video)
+        self.lbl_time.configure(text=f"{cur_sec//60:02d}:{cur_sec%60:02d} / {tot_sec//60:02d}:{tot_sec%60:02d}")
+
+        w_avail = self.main_view.winfo_width()
+        h_avail = self.main_view.winfo_height() - 60 # Margen para controles
+        if w_avail < 10 or h_avail < 10: return
+        
+        ratio = min(w_avail / pil_img.width, h_avail / pil_img.height)
+        new_w = int(pil_img.width * ratio)
+        new_h = int(pil_img.height * ratio)
+        
+        ctk_img = ctk.CTkImage(pil_img, size=(new_w, new_h))
+        self.image_label.configure(image=ctk_img)
+        self.image_label.place(relx=0.5, rely=0.45, anchor="center")
+
+    def _finish_video(self):
+        self.processing = False
+        self.video_playing = False
+        self.btn_run_all.configure(state="normal")
+        self.btn_video.configure(text="Video en Tiempo Real", fg_color="#4a4a4a", command=self.import_video)
+        self.video_controls.pack_forget()
+        self.log("Video finalizado.")
 
 if __name__ == "__main__":
     app = PIUAnalyticsPro()
