@@ -29,9 +29,9 @@ class VideoProcessor:
         if not HAS_YTDLP:
             raise ImportError("yt_dlp library is missing.")
 
-        # Limit height to 720 to optimize speed/size
+        # Higher resolution for better OCR (Limit to 1080p to keep processing reasonable)
         ydl_opts = {
-            'format': 'bestvideo[height<=720]+bestaudio/best[height<=720]',
+            'format': 'bestvideo[height<=1080]+bestaudio/best[height<=1080]',
             'outtmpl': os.path.join(self.output_dir, 'downloaded_video.%(ext)s'),
             'progress_hooks': [progress_hook] if progress_hook else [],
             'quiet': True,
@@ -73,7 +73,7 @@ class VideoProcessor:
         if shutil.which("ffmpeg") is None:
             raise RuntimeError("ffmpeg not found in system PATH.")
 
-        output_pattern = os.path.join(frames_dir, "frame_%04d.jpg")
+        output_pattern = os.path.join(frames_dir, "frame_%04d.png")
         
         # Calculate approximate total frames to output
         total_input_frames = 0
@@ -95,25 +95,13 @@ class VideoProcessor:
         except:
             estimated_output = 100
 
-        # fps=2/3 means 2 frames every 3 seconds -> ~0.666 fps -> 1 frame every 1.5s
-        cmd = [
-            "ffmpeg",
-            "-threads", "0",     # Let ffmpeg choose max threads (all cores)
-            "-i", video_path,
-            "-vf", "fps=2/3",    # One frame every 1.5 seconds
-            "-q:v", "2",         # High quality jpeg
-            "-progress", "pipe:1", # Output progress to stdout for easier parsing
-            output_pattern
-        ]
-        
-        # We invoke ffmpeg without 'pipe:1' for progress usually, but standard stderr parsing is more reliable for 'frame='
-        # Let's revert to standard stderr parsing.
+        # Lossless Extraction using PNG
         cmd = [
              "ffmpeg",
             "-threads", "0",
             "-i", video_path,
             "-vf", "fps=2/3",
-            "-q:v", "2",
+            "-compression_level", "0", # Faster but still lossless PNG
             output_pattern
         ]
 
@@ -150,12 +138,15 @@ class VideoProcessor:
         frames = sorted([
             os.path.join(frames_dir, f)
             for f in os.listdir(frames_dir)
-            if f.endswith(".jpg")
+            if f.endswith(".png")
         ])
         return frames
 
 class FrameAnalyzer:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, output_dir="output_piu"):
+        self.output_dir = output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        
         self.model = YOLO(model_path)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(self.device)
@@ -177,12 +168,23 @@ class FrameAnalyzer:
 
         self.stop_requested = False
         
-        # Initialize OCR Reader (supports English numbers and latin characters)
         try:
-            self.ocr_reader = easyocr.Reader(['en'], gpu=torch.cuda.is_available())
-            print("OCR Reader initialized.")
+            # Initialize OCR Reader
+            # Warning suggests "ja" needs "en". detailed_list=["ja", "en"]
+            # We try standard mix. If fails, fallback to en.
+            print("Attempting to initialize OCR with [en, ko, ja]...")
+            self.ocr_reader = easyocr.Reader(['en', 'ko', 'ja'], gpu=torch.cuda.is_available())
+            print("OCR Reader initialized with [en, ko, ja] support.")
+        except Exception as e_multi:
+            print(f"Failed to init multi-language OCR ({e_multi}). Falling back to English only.")
+            try:
+                self.ocr_reader = easyocr.Reader(['en'], gpu=torch.cuda.is_available())
+                print("OCR Reader initialized with [en] support (Fallback).")
+            except:
+                self.ocr_reader = None
         except Exception as e:
-            print(f"Warning: OCR Reader failed to initialize: {e}")
+             # Catch-all
+            print(f"Warning: OCR Reader failed to initialize completely: {e}")
             self.ocr_reader = None
 
     def perform_ocr(self, image_path: str) -> Dict[str, str]:
@@ -204,7 +206,7 @@ class FrameAnalyzer:
             cls_name = self.model.names[cls_idx]
             
             # Target classes for OCR
-            if cls_name in ["score", "song_name", "song_title", "rank"]:
+            if cls_name in ["score", "song_name", "song_title", "rank", "fullscore"]:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 # Add small padding
                 h, w = img.shape[:2]
@@ -214,11 +216,98 @@ class FrameAnalyzer:
                 
                 crop = img[y1:y2, x1:x2]
                 
+                # 1. Try to Save Crop (Independent step)
+                crop_path = None
+                try:
+                    debug_crops_dir = os.path.join(os.path.abspath(self.output_dir), "debug_crops")
+                    os.makedirs(debug_crops_dir, exist_ok=True)
+                    crop_name = f"{cls_name}_{int(time.time() * 1000)}.png"
+                    crop_path = os.path.join(debug_crops_dir, crop_name)
+                    # Save as PNG for maximum OCR clarity
+                    cv2.imwrite(crop_path, crop, [cv2.IMWRITE_PNG_COMPRESSION, 0])
+                    
+                    # Store crop path
+                    base_key = "song_name" if cls_name in ["song_name", "song_title"] else cls_name
+                    ocr_data[f"{base_key}_crop"] = crop_path
+                except Exception as e_img:
+                    print(f"Warning: Failed to save crop image: {e_img}")
+
+                # 2. Perform OCR
                 try:
                     # easyocr.readtext returns list of (bbox, text, confidence)
                     detected_text = self.ocr_reader.readtext(crop, detail=0)
                     if detected_text:
                         combined_text = " ".join(detected_text).strip()
+                        
+                        # --- Specific Parsing Rules ---
+                        if cls_name == "score":
+                            # User Requirement: Map 'O'->0, 'I'->1 before filtering numbers
+                            # Common OCR misinterpretations for digits
+                            txt_upper = combined_text.upper()
+                            replacements = {
+                                'O': '0', 'D': '0', 'Q': '0',
+                                'I': '1', 'L': '1', '|': '1', '!': '1',
+                                'S': '5', 'Z': '2', 'B': '8'
+                            }
+                            for char, digit in replacements.items():
+                                txt_upper = txt_upper.replace(char, digit)
+                                
+                            # Now extract only digits
+                            digits = re.findall(r'\d+', txt_upper)
+                            combined_text = "".join(digits)
+                            
+                            # Heuristic: Score <= 1,000,000
+                            # If length > 7, it's definitely wrong (e.g. 50974264). 
+                            # Usually noise is prefixed (Sequence 1 50974264 -> 150974264)
+                            if len(combined_text) > 7:
+                                combined_text = combined_text[-7:]
+                                
+                            # If still > 1,000,000, it might be 890,000 but read as 1890000? 
+                            # Or maybe 974264 read as 1974264.
+                            # Strict check: Max score 1,000,000
+                            try:
+                                val = int(combined_text)
+                                if val > 1000000:
+                                     # If > 1M, try removing leading digits until valid
+                                     # but usually just taking last 6 is safe if it was > 1M
+                                     if len(combined_text) >= 7:
+                                         # valid 1,000,000 is 7 chars. 
+                                         # If we have 7 chars and > 1M, implies > 1XXXXXX.
+                                         # PIU Scores are often 6 digits unless perfect/high?
+                                         # Let's take last 6 digits as a fallback
+                                         combined_text = combined_text[-6:]
+                            except:
+                                pass
+
+                        elif cls_name == "rank":
+                            # Validate against possible PIU ranks
+                            upper_text = combined_text.upper().replace(" ", "")
+                            
+                            # Possible Ranks sorted by length to match SSS+ before S
+                            possible_ranks = [
+                                "SSS+", "SSS", "SS+", "SS", "S+", "S", 
+                                "AAA+", "AAA", "AA+", "AA", "A+", "A", 
+                                "B+", "B", "C", "D", "F"
+                            ]
+                            
+                            found_rank = None
+                            
+                            # 1. Exact match attempt
+                            if upper_text in possible_ranks:
+                                found_rank = upper_text
+                            else:
+                                # 2. Contains match attempt (greedy)
+                                for r in possible_ranks:
+                                    if r in upper_text:
+                                        found_rank = r
+                                        break
+                            
+                            if found_rank:
+                                combined_text = found_rank
+                            # If no rank found, we leave combined_text as is (or could set to Unknown)
+
+                        # song_name: Text is kept as is (supports letters, symbols, ko/ja)
+                        
                         # Use a canonical key for the dictionary
                         key = "song_name" if cls_name in ["song_name", "song_title"] else cls_name
                         ocr_data[key] = combined_text
@@ -317,3 +406,155 @@ class FrameAnalyzer:
                 print(f"Error analyzing frame {path}: {e}")
             
             i += 1
+
+# --- LLM Integration ---
+import requests
+import base64
+import json
+
+class LLMService:
+    def __init__(self, api_url, api_key, model="gpt-4o"):
+        self.api_url = api_url
+        self.api_key = api_key
+        self.model = model
+
+    def _encode_image(self, image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    def list_available_models(self) -> List[str]:
+        try:
+            # Normalize Base URL
+            # If user provided full chat path: .../v1/chat/completions -> .../v1/models
+            # If user provided base: .../ -> .../v1/models
+            
+            base = self.api_url.rstrip("/")
+            if "/chat/completions" in base:
+                base = base.split("/chat/completions")[0]
+            
+            # Ensure we target /v1/models (common standard)
+            if not base.endswith("/v1"):
+                # If base is just root (e.g. localhost:1234), assume /v1 needed
+                # But some valid paths might be /api/v1... try standard append
+                url = f"{base}/v1/models"
+            else:
+                url = f"{base}/models"
+                
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            print(f"Fetching models from: {url}")
+            
+            try:
+                res = requests.get(url, headers=headers, timeout=5)
+            except:
+                # Retry without /v1/models, maybe just /models
+                url = f"{base}/models"
+                print(f"Retrying fetch models from: {url}")
+                res = requests.get(url, headers=headers, timeout=5)
+
+            if res.status_code == 200:
+                data = res.json()
+                return [m["id"] for m in data.get("data", [])]
+            return [f"Error: {res.status_code}"]
+        except Exception as e:
+            print(f"List Models Error: {e}")
+            return []
+
+    def analyze_crops(self, crops: Dict[str, str]) -> Dict:
+        """
+        Sends provided crops to LLM for analysis.
+        Expects crops dict: {'song_name': path, 'score': path, 'rank': path, etc}
+        """
+        
+        # URL Logic: Auto-append correct endpoint if missing
+        target_url = self.api_url
+        if "/chat/completions" not in target_url:
+            # Provide smart defaults for local servers often running on root
+            target_url = f"{target_url.rstrip('/')}/v1/chat/completions"
+            print(f"Auto-corrected LLM URL to: {target_url}")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+
+        messages_content = [
+            {
+                "type": "text",
+                "text": """You are an expert at analyzing Pump It Up game result screens.
+Analyze the provided images and extract the following data in strictly valid JSON format:
+{
+  "song_name": "The text of the song title (support Korean/Japanese/English)",
+  "score": "The numeric score (digits only, 0 to 1000000)",
+  "rank": "The rank letter (SSS+, SSS, SS+, SS, S+, S, AAA+, AAA, AA+, AA, A+, A, B+, B, C, D, F)",
+  "difficulty": "Extract the difficulty level (e.g. S18, D24, Co-Op). Be flexible and tolerant: if the text is blurry or partial, provide your best guess. Use color hints if possible: Orange/Red=Single(S), Green=Double(D), Yellow=Co-op. Return null ONLY if completely invisible."
+}
+If an image for a specific field is missing or unclear, set null.
+"""
+            }
+        ]
+
+        # Add available images
+        for key, path in crops.items():
+            if path and os.path.exists(path):
+                try:
+                    b64_img = self._encode_image(path)
+                    messages_content.append({
+                        "type": "text",
+                        "text": f"Image for field '{key}':"
+                    })
+                    messages_content.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{b64_img}"
+                        }
+                    })
+                except Exception as e:
+                    print(f"Error encoding {key}: {e}")
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": messages_content
+                }
+            ],
+            "max_tokens": 300
+        }
+        
+        # Only strict JSON mode for official OpenAI models or if user forces it
+        # Many local servers (LM Studio, vLLM) fail with 'json_object' on non-supported models
+        if "gpt" in self.model.lower():
+            payload["response_format"] = { "type": "json_object" }
+
+        try:
+            print(f"Sending request to {target_url} with model {self.model}...")
+            response = requests.post(target_url, headers=headers, json=payload, timeout=30)
+            
+            # Retry without response_format if 400 error occurs
+            if response.status_code == 400 and "response_format" in payload:
+                print("400 Error. Retrying without 'response_format'...")
+                del payload["response_format"]
+                response = requests.post(target_url, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                print(f"LLM Error Status: {response.status_code}")
+                print(f"Response: {response.text}")
+                return {"error": f"HTTP {response.status_code}: {response.text[:100]}"}
+
+            res_json = response.json()
+            if 'choices' not in res_json:
+                 print(f"Invalid Response Structure: {res_json}")
+                 return {"error": "No 'choices' in response"}
+
+            content = res_json['choices'][0]['message']['content']
+            
+            # Remove ```json formatting if present
+            content = content.replace("```json", "").replace("```", "").strip()
+
+            # Ensure we parse JSON
+            data = json.loads(content)
+            return data
+        except Exception as e:
+            print(f"LLM Error: {e}")
+            return {"error": str(e)}

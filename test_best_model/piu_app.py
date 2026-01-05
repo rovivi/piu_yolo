@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 import shutil
+import subprocess
 import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -40,7 +41,8 @@ if sys.platform == "darwin":
 
 
 # Import Core Logic
-from piu_core import VideoProcessor, FrameAnalyzer
+from piu_core import VideoProcessor, FrameAnalyzer, LLMService
+import json
 
 # --- Configuration & Constants ---
 APP_NAME = "PIU Analytics Pro V2.5"
@@ -71,6 +73,11 @@ class PIUApp(ctk.CTk):
         self.analyzer: Optional[FrameAnalyzer] = None
         self.valid_frames = []
         self.is_processing = False
+        
+        # LLM State
+        self.llm_service = None
+        self.llm_config = {"api_url": "https://api.openai.com/v1/chat/completions", "api_key": "", "model": "gpt-4o"}
+        self._load_config()
         
         # Load Model
         self._set_status("Initializing Model...", COLOR_WARNING)
@@ -108,6 +115,32 @@ class PIUApp(ctk.CTk):
         
         self.combo_device = ctk.CTkComboBox(self.sidebar, values=["Auto (GPU/CPU)", "CPU Only"], fg_color="#2b2b2b", border_color="#444")
         self.combo_device.pack(pady=5, padx=20, fill="x")
+
+        # -- AI Settings --
+        ctk.CTkLabel(self.sidebar, text="AI SETTINGS", font=("Roboto", 12, "bold"), text_color="#555").pack(anchor="w", padx=25, pady=(20,5))
+        
+        self.entry_api_url = ctk.CTkEntry(self.sidebar, placeholder_text="API Endpoint", height=30, border_color="#444")
+        self.entry_api_url.bind("<FocusOut>", lambda e: self._save_config_params()) # Auto-save/update state
+        self.entry_api_url.pack(padx=20, pady=5, fill="x")
+        self.entry_api_url.insert(0, self.llm_config.get("api_url", ""))
+        
+        self.entry_api_key = ctk.CTkEntry(self.sidebar, placeholder_text="API Key (sk-...)", height=30, border_color="#444", show="*")
+        self.entry_api_key.bind("<FocusOut>", lambda e: self._save_config_params())
+        self.entry_api_key.pack(padx=20, pady=5, fill="x")
+        self.entry_api_key.insert(0, self.llm_config.get("api_key", ""))
+        
+        self.entry_model = ctk.CTkEntry(self.sidebar, placeholder_text="Model (gpt-4o)", height=30, border_color="#444")
+        self.entry_model.bind("<FocusOut>", lambda e: self._save_config_params())
+        self.entry_model.pack(padx=20, pady=5, fill="x")
+        self.entry_model.insert(0, self.llm_config.get("model", ""))
+        
+        self.btn_init_ai = ctk.CTkButton(self.sidebar, text="Reload AI Service", command=self._init_llm, 
+                                       fg_color="#5e35b1", hover_color="#4527a0", height=30)
+        self.btn_init_ai.pack(padx=20, pady=(10, 5), fill="x") # Reduced bottom padding
+
+        self.btn_list_models = ctk.CTkButton(self.sidebar, text="List Available Models", command=self._list_server_models, 
+                                       fg_color="#333", hover_color="#444", height=24, font=("Roboto", 10))
+        self.btn_list_models.pack(padx=20, pady=(0, 10), fill="x")
         
         self.btn_clean = ctk.CTkButton(self.sidebar, text="Clean Cache", command=self.clean_project_cache, 
                                      fg_color="#c0392b", hover_color="#a93226")
@@ -194,6 +227,90 @@ class PIUApp(ctk.CTk):
         self.scroll_results.pack(fill="both", expand=True)
 
         return frame
+
+        return frame
+
+    def _load_config(self):
+        try:
+            if os.path.exists("llm_config.json"):
+                with open("llm_config.json", "r") as f:
+                    self.llm_config.update(json.load(f))
+        except Exception as e:
+            print(f"Config load error: {e}")
+            
+    def _save_config_params(self):
+        self.llm_config["api_url"] = self.entry_api_url.get().strip()
+        self.llm_config["api_key"] = self.entry_api_key.get().strip()
+        self.llm_config["model"] = self.entry_model.get().strip()
+        
+        try:
+            with open("llm_config.json", "w") as f:
+                json.dump(self.llm_config, f)
+        except Exception as e:
+            print(f"Config save error: {e}")
+
+    def _init_llm(self):
+        self._save_config_params()
+        if not self.llm_config["api_key"]:
+            self._log("AI Init: No API Key provided.")
+            return
+
+        try:
+            self.llm_service = LLMService(
+                self.llm_config["api_url"],
+                self.llm_config["api_key"],
+                self.llm_config["model"]
+            )
+            
+            # Auto-detect model if missing
+            if not self.llm_config["model"]:
+                self._log("Model not set. Auto-detecting...")
+                threading.Thread(target=self._auto_select_model, daemon=True).start()
+            else:
+                self._log("AI Service initialized.")
+                self._set_status(f"AI Ready: {self.llm_config['model']}", COLOR_SUCCESS)
+                
+        except Exception as e:
+            self._log(f"AI Init Error: {e}")
+
+    def _auto_select_model(self):
+        try:
+            models = self.llm_service.list_available_models()
+            if models:
+                first = models[0]
+                self.llm_config["model"] = first
+                self.llm_service.model = first
+                
+                # UI Update in main thread
+                self.after(0, lambda: [
+                    self.entry_model.delete(0, "end"),
+                    self.entry_model.insert(0, first),
+                    self._save_config_params(),
+                    self._set_status(f"AI Ready (Auto): {first}", COLOR_SUCCESS),
+                    self._log(f"Auto-selected model: {first}")
+                ])
+            else:
+                self.after(0, lambda: self._log("Could not auto-detect models."))
+        except Exception as e:
+             self.after(0, lambda: self._log(f"Auto-detect error: {e}"))
+
+    def _list_server_models(self):
+        if not self.llm_service:
+            self._log("AI Service not initialized.")
+            return
+            
+        def thread_list():
+            self._log("Fetching models...")
+            models = self.llm_service.list_available_models()
+            if models:
+                msg = "\n".join([f"- {m}" for m in models])
+                self._log(f"Available Models:\n{msg}")
+                messagebox.showinfo("Models", f"Found {len(models)} models. Check Log for details.")
+            else:
+                self._log("No models found or error fetching.")
+                messagebox.showwarning("Models", "No models found.")
+        
+        threading.Thread(target=thread_list, daemon=True).start()
 
     # --- Logic ---
     def _load_model(self):
@@ -440,7 +557,7 @@ class PIUApp(ctk.CTk):
         # Create Toplevel
         top = ctk.CTkToplevel(self)
         top.title(f"Preview: {os.path.basename(path)}")
-        top.geometry("950x750")
+        top.geometry("1100x800")
         top.configure(fg_color=COLOR_BG_DARK)
         top.after(100, lambda: top.focus_set()) # Ensure it comes to front
 
@@ -448,14 +565,14 @@ class PIUApp(ctk.CTk):
         left_panel = ctk.CTkFrame(top, fg_color="transparent")
         left_panel.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
-        right_panel = ctk.CTkFrame(top, width=250, fg_color=COLOR_BG_CARD)
+        right_panel = ctk.CTkFrame(top, width=350, fg_color=COLOR_BG_CARD)
         right_panel.pack(side="right", fill="y", padx=10, pady=10)
         
         # Image Display
         try:
             img = Image.open(path)
             # Resize logic for display
-            display_w, display_h = 650, 600
+            display_w, display_h = 700, 750
             ratio = min(display_w/img.width, display_h/img.height)
             new_size = (int(img.width*ratio), int(img.height*ratio))
             
@@ -465,14 +582,121 @@ class PIUApp(ctk.CTk):
         except Exception as e:
             ctk.CTkLabel(left_panel, text=f"Error loading image: {e}").pack()
 
-        # OCR Panel
-        ctk.CTkLabel(right_panel, text="OCR DATA", font=("Roboto", 16, "bold"), text_color=COLOR_ACCENT).pack(pady=20)
+        # OCR Panel Header
+        ctk.CTkLabel(right_panel, text="OCR DATA ANALYSIS", font=("Roboto", 18, "bold"), text_color=COLOR_ACCENT).pack(pady=(20, 10))
         
-        ocr_container = ctk.CTkFrame(right_panel, fg_color="transparent")
-        ocr_container.pack(fill="both", expand=True, padx=10)
+        # AI Button
+        self.btn_run_ai = ctk.CTkButton(right_panel, text="Analyze with AI ✨", command=lambda: run_ai_logic(),
+                                      fg_color="#5e35b1", hover_color="#4527a0", state="disabled")
+        self.btn_run_ai.pack(fill="x", padx=20, pady=(0, 10))
 
-        lbl_ocr_status = ctk.CTkLabel(ocr_container, text="Running OCR...", font=("Roboto Mono", 11), text_color="gray")
-        lbl_ocr_status.pack(pady=10)
+        # Status Label (Persistent in Right Panel)
+        lbl_ocr_status = ctk.CTkLabel(right_panel, text="Running OCR...", font=("Roboto Mono", 12), text_color="gray")
+        lbl_ocr_status.pack(pady=(0,10))
+
+        ocr_container = ctk.CTkScrollableFrame(right_panel, fg_color="transparent")
+        ocr_container.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Shared state for this preview
+        self.current_preview_results = {}
+
+        def render_results(local_data, ai_data=None):
+            # Clear container
+            for w in ocr_container.winfo_children(): w.destroy()
+            
+            # Helper to display a single row (Local vs AI)
+            def add_comparison_row(label, key, color="white"):
+                local_val = local_data.get(key, "Not detected")
+                ai_val = ai_data.get(key, "N/A") if ai_data else None
+                crop_path = local_data.get(f"{key}_crop", None)
+                
+                # Main Card
+                card = ctk.CTkFrame(ocr_container, fg_color="#2b2b2b", corner_radius=6)
+                card.pack(fill="x", pady=8)
+                
+                # --- Header ---
+                ctk.CTkLabel(card, text=label, font=("Roboto", 11, "bold"), text_color="#aaa").pack(anchor="w", padx=12, pady=(8,2))
+
+                # --- Body Layout ---
+                # We use a vertical stack: Top = Local (Img+Txt), Bottom = AI
+                
+                # 1. LOCAL SECTION
+                f_local = ctk.CTkFrame(card, fg_color="transparent")
+                f_local.pack(fill="x", padx=10, pady=5)
+                
+                # Image (Left)
+                if crop_path and os.path.exists(crop_path):
+                    try:
+                        pil_crop = Image.open(crop_path)
+                        cw, ch = pil_crop.size
+                        ratio = 90 / ch 
+                        w = int(cw * ratio)
+                        ctk_crop = ctk.CTkImage(pil_crop, size=(w, 90))
+                        
+                        img_box = ctk.CTkFrame(f_local, fg_color="transparent")
+                        img_box.pack(side="left", padx=(0,15))
+                        
+                        ctk.CTkLabel(img_box, image=ctk_crop, text="").pack()
+                        ctk.CTkLabel(img_box, text=f"{cw}x{ch}", font=("Roboto Mono", 8), text_color="gray").pack()
+                    except: pass
+
+                # Text & Controls (Right of Image)
+                txt_box = ctk.CTkFrame(f_local, fg_color="transparent")
+                txt_box.pack(side="left", fill="both", expand=True)
+                
+                ctk.CTkLabel(txt_box, text="LOCAL OCR", font=("Roboto", 9, "bold"), text_color="gray").pack(anchor="w")
+                
+                font_size = 24 if key == "score" else 16
+                ctk.CTkLabel(txt_box, text=local_val, font=("Roboto Mono", font_size, "bold"), 
+                           text_color=color, wraplength=350, justify="left").pack(anchor="w", pady=(0,5))
+                
+                # Buttons
+                btn_row = ctk.CTkFrame(txt_box, fg_color="transparent")
+                btn_row.pack(anchor="w")
+                ctk.CTkButton(btn_row, text="Copy", width=50, height=22, font=("Roboto", 10), fg_color="#444",
+                            command=lambda t=local_val: self.clipboard_clear() or self.clipboard_append(t)).pack(side="left", padx=(0,5))
+                if crop_path:
+                    ctk.CTkButton(btn_row, text="Img", width=50, height=22, font=("Roboto", 10), fg_color="#27ae60",
+                                command=lambda p=crop_path: self._copy_image_to_clipboard(p)).pack(side="left")
+
+                # 2. AI SECTION (Full Width Separator)
+                ctk.CTkFrame(card, height=1, fg_color="#444").pack(fill="x", padx=5, pady=5)
+                
+                f_ai = ctk.CTkFrame(card, fg_color="#222", corner_radius=0)
+                f_ai.pack(fill="x", padx=5, pady=(0,5))
+                
+                ai_header = ctk.CTkFrame(f_ai, fg_color="transparent")
+                ai_header.pack(fill="x", padx=8, pady=5)
+                ctk.CTkLabel(ai_header, text="AI ANALYSIS ✨", font=("Roboto", 10, "bold"), text_color="#5e35b1").pack(side="left")
+                
+                if ai_data:
+                    # Comparison Logic
+                    is_match = str(local_val) == str(ai_val)
+                    ai_color = COLOR_SUCCESS if is_match else COLOR_WARNING
+                    if str(ai_val).lower() == "null" or ai_val is None: 
+                        ai_color = "gray"
+                        ai_val = "Not detected / Null"
+
+                    # AI Text Value (Full Width)
+                    ctk.CTkLabel(f_ai, text=str(ai_val), font=("Roboto Mono", font_size, "bold"), 
+                               text_color=ai_color, wraplength=480, justify="left").pack(padx=10, pady=(0,10), anchor="w")
+                    
+                    # Optional copy for AI?
+                    # ctk.CTkButton(ai_header, text="Copy AI", width=50, ...).pack(side="right") 
+                else:
+                    ctk.CTkLabel(f_ai, text="Waiting...", font=("Roboto Mono", 11), text_color="#555").pack(padx=10, pady=10, anchor="w")
+
+            add_comparison_row("FULL SCREEN AREA", "fullscore")
+            add_comparison_row("SONG TITLE", "song_name")
+            add_comparison_row("SCORE", "score", COLOR_SUCCESS)
+            add_comparison_row("RANK", "rank", COLOR_WARNING)
+            
+            # Special Row for AI Difficulty
+            if ai_data and ai_data.get("difficulty"):
+                 card = ctk.CTkFrame(ocr_container, fg_color="#2b2b2b", corner_radius=6)
+                 card.pack(fill="x", pady=8)
+                 ctk.CTkLabel(card, text="AI DETECTED DIFFICULTY", font=("Roboto", 10, "bold"), text_color="#888").pack(anchor="w", padx=12, pady=5)
+                 ctk.CTkLabel(card, text=ai_data["difficulty"], font=("Roboto Mono", 20, "bold"), text_color="#f39c12").pack(pady=10)
 
         def run_ocr_logic():
             if not self.analyzer:
@@ -480,34 +704,74 @@ class PIUApp(ctk.CTk):
                 return
 
             try:
-                results = self.analyzer.perform_ocr(path)
+                self.current_preview_results = self.analyzer.perform_ocr(path)
                 
                 def update_ui():
                     lbl_ocr_status.pack_forget()
-                    
-                    # Song Name
-                    ctk.CTkLabel(ocr_container, text="SONG:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
-                    song = results.get("song_name", "Not detected")
-                    song_lbl = ctk.CTkLabel(ocr_container, text=song, font=("Roboto", 14, "bold"), wraplength=220)
-                    song_lbl.pack(anchor="w", pady=(0,10))
-                    
-                    # Score
-                    ctk.CTkLabel(ocr_container, text="SCORE:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
-                    score = results.get("score", "Not detected")
-                    score_lbl = ctk.CTkLabel(ocr_container, text=score, font=("Roboto Mono", 24, "bold"), text_color=COLOR_SUCCESS)
-                    score_lbl.pack(anchor="w", pady=(0,10))
-                    
-                    # Rank
-                    if "rank" in results:
-                        ctk.CTkLabel(ocr_container, text="RANK:", font=("Roboto", 12, "bold"), text_color="#888").pack(anchor="w", pady=(10,0))
-                        rank_lbl = ctk.CTkLabel(ocr_container, text=results["rank"], font=("Roboto Mono", 18, "bold"), text_color=COLOR_WARNING)
-                        rank_lbl.pack(anchor="w", pady=(0,10))
+                    render_results(self.current_preview_results)
+                    # Enable AI button if service is ready
+                    if self.llm_service:
+                        self.btn_run_ai.configure(state="normal")
+                    else:
+                        self.btn_run_ai.configure(text="AI Not Configured")
 
                 self.after(0, update_ui)
             except Exception as e:
                 self.after(0, lambda: lbl_ocr_status.configure(text=f"OCR Error: {e}", text_color=COLOR_ERROR))
 
+        def run_ai_logic():
+            if not self.llm_service: return
+            
+            # Start UI State (Main Thread)
+            lbl_ocr_status.configure(text="Contacting AI Service...", text_color=COLOR_ACCENT)
+            lbl_ocr_status.pack(pady=10)
+            self.btn_run_ai.configure(state="disabled")
+            
+            def on_ai_complete(results, elapsed):
+                lbl_ocr_status.pack_forget()
+                self._log(f"AI Analysis finished in {elapsed:.2f}s")
+                render_results(self.current_preview_results, results)
+                self.btn_run_ai.configure(state="normal")
+                self.btn_run_ai.configure(text=f"Analyze with AI ✨ ({elapsed:.1f}s)")
+            
+            def thread_ai():
+                import time
+                start_t = time.time()
+                try:
+                    # Prepare crops dict
+                    crops = {}
+                    for k in ["song_name", "score", "rank", "fullscore"]:
+                        cp = self.current_preview_results.get(f"{k}_crop")
+                        if cp: crops[k] = cp
+                    
+                    ai_results = self.llm_service.analyze_crops(crops)
+                    elapsed = time.time() - start_t
+                    
+                    # Schedule UI Update
+                    self.after(0, lambda: on_ai_complete(ai_results, elapsed))
+                    
+                except Exception as e:
+                     self.after(0, lambda: lbl_ocr_status.configure(text=f"AI Error: {e}", text_color=COLOR_ERROR))
+                     self.after(0, lambda: self.btn_run_ai.configure(state="normal"))
+                     
+            threading.Thread(target=thread_ai, daemon=True).start()
+
         threading.Thread(target=run_ocr_logic, daemon=True).start()
+
+    def _copy_image_to_clipboard(self, path):
+        try:
+            abs_path = os.path.abspath(path)
+            if sys.platform == "darwin":
+                # AppleScript to copy image to clipboard
+                # 'POSIX file' handles path conversion
+                cmd = f'set the clipboard to (read (POSIX file "{abs_path}") as JPEG picture)'
+                subprocess.run(["osascript", "-e", cmd])
+                self._set_status("Image copied to clipboard!", COLOR_SUCCESS)
+            else:
+                self._set_status("Clipboard image not supported on this OS", COLOR_WARNING)
+        except Exception as e:
+            print(f"Clipboard Error: {e}")
+            self._set_status("Failed to copy image", COLOR_ERROR)
 
     def _log(self, msg):
         ts = datetime.datetime.now().strftime("%H:%M:%S")
