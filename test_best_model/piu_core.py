@@ -198,15 +198,15 @@ class FrameAnalyzer:
         if img is None:
             return {}
 
-        results = self.model.predict(img, conf=0.3, verbose=False)[0]
+        results = self.model.predict(img, conf=0.35, verbose=False)[0]
         ocr_data = {}
 
         for box in results.boxes:
             cls_idx = int(box.cls[0])
             cls_name = self.model.names[cls_idx]
             
-            # Target classes for OCR
-            if cls_name in ["score", "song_name", "song_title", "rank", "fullscore"]:
+            # Target classes for OCR (Lower tolerance for objects like difficulty)
+            if cls_name in ["score", "song_name", "song_title", "rank", "fullscore", "difficulty"]:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 # Add small padding
                 h, w = img.shape[:2]
@@ -316,7 +316,7 @@ class FrameAnalyzer:
 
         return ocr_data
 
-    def analyze_stream(self, image_paths: List[str], conf=0.4, iou=0.7) -> Generator[Dict, None, None]:
+    def analyze_stream(self, image_paths: List[str], conf=0.3, iou=0.7) -> Generator[Dict, None, None]:
         """
         Analyzes a sequence of images.
         Yields 'events' (best frame) as they are found.
