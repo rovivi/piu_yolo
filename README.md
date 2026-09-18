@@ -1,21 +1,23 @@
 # PIU YOLO Training 💃🕹️
 
-Este proyecto está diseñado para entrenar un modelo de detección de objetos utilizando **YOLOv8** para reconocer elementos específicos en la pantalla del juego **Pump It Up (PIU)**.
+Este proyecto entrena un detector de objetos con **YOLO26** (Ultralytics) para reconocer elementos específicos de la pantalla del juego **Pump It Up (PIU)**.
 
 ## 🚀 Propósito
-El objetivo principal es identificar automáticamente información clave de la interfaz de usuario de PIU, como el nombre de la canción, el puntaje, el rango y la dificultad. Esto puede ser útil para sistemas de estadísticas automáticas, overlays o análisis de repeticiones.
+Identificar automáticamente información clave de la interfaz de PIU — nombre de la canción, puntaje, rango y dificultad — para sistemas de estadísticas automáticas, overlays o análisis de repeticiones.
 
 ## 📂 Estructura del Proyecto
 
-- `training.py`: Script principal para iniciar el entrenamiento del modelo.
-- `data.yml`: Configuración del dataset (rutas de imágenes y nombres de clases).
-- `classes.txt`: Lista de las etiquetas/clases que el modelo aprenderá a detectar.
-- `images/`: Directorio que contiene las capturas de pantalla para el entrenamiento.
-- `labels/`: Directorio con las anotaciones en formato YOLO para cada imagen.
-- `yolov8n.pt`: Pesos iniciales del modelo YOLOv8 Nano (modelo ligero y rápido).
+- `training.py`: Script principal de entrenamiento (detecta el device automáticamente: MPS en Mac, ROCm/CUDA en Linux).
+- `data.yml`: Dataset original (160 frames de video, split train/val).
+- `data_merged.yml`: **Dataset fusionado** — frames de video + fotos de cabina (`photos/`). Este es el que usa el entrenamiento actual.
+- `photos/`: Dataset de fotos de cabina / teléfono (58 imágenes, 44 train + 14 val).
+- `mine_negatives.py`: Mining de falsos positivos → genera imágenes `neg_*` (fondo) para el train set.
+- `prepare_dataset.py`: Split train/val del dataset.
+- `continue.py`: Continuar entrenamiento desde el último checkpoint.
+- `piu_ia/`: Runs de entrenamiento (checkpoints `best.pt`/`last.pt` + `args.yaml`). El run más reciente es `yolo26_v1`.
+- `yolo26s.pt`: Base model YOLO26 Small.
 
 ## 🏷️ Clases Detectadas
-El modelo está configurado para reconocer las siguientes 5 clases:
 1. `difficulty`: El nivel de dificultad de la canción.
 2. `fullscore`: El puntaje máximo posible o acumulado.
 3. `rank`: Los grados (S, SS, A, etc.).
@@ -23,26 +25,44 @@ El modelo está configurado para reconocer las siguientes 5 clases:
 5. `song_name`: El título de la canción.
 
 ## 🛠️ Requisitos
-Asegúrate de tener instalada la librería de Ultralytics:
 
 ```bash
-pip install ultralytics
+pip install ultralytics   # >= 8.4.x (soporte YOLO26)
 ```
 
+El modelo corre en cualquier plataforma:
+- **Mac (Apple Silicon)**: usa MPS automáticamente.
+- **Linux AMD (ROCm)**: solo en entornos con torch 2.4.1+rocm6.0 se requiere parchear `torch/cuda/__init__.py` (bug `amdsmi`) y pasar `amp=False` (ya incluidos en `training.py`).
+- **Linux/CUDA** o CPU: funciona sin configuración extra.
+
 ## 🏋️ Entrenamiento
-Para comenzar el entrenamiento, simplemente ejecuta el script `training.py`:
 
 ```bash
 python training.py
 ```
 
-### Configuración de Entrenamiento
-El script está configurado actualmente con:
-- **Modelo**: YOLOv8 Nano (`yolov8n.pt`)
-- **Épocas**: 100
-- **Resolución**: 1024px
-- **Dispositivo**: `mps` (optimizado para chips Apple Silicon) o detectará automáticamente tu hardware.
-- **Proyecto**: Los resultados se guardarán en la carpeta `piu_ia/first_try`.
+### Configuración actual
+- **Modelo**: YOLO26 Small (`yolo26s.pt`, NMS-free end-to-end, sin DFL)
+- **Dataset**: `data_merged.yml` (204 train / 54 val, rutas relativas — portable Linux/Mac)
+- **Épocas**: 300, patience 50, `imgsz=1024`, batch 16
+- **Au mentaciones**: degrees 5°, sin fliplr/shear (song_name es texto horizontal)
+
+### Resultados (val, dataset fusionado)
+
+| Run | Modelo | mAP50 | mAP50-95 |
+|---|---|---|---|
+| `v5_photos` | YOLOv8 (cadena finetune) | 0.811 | 0.424 |
+| `yolo26_v1` ✅ actual | YOLO26s scratch | **0.826** | **0.425** |
+
+La clase `score` es la más sólida (mAP50 0.938); `song_name` es la más débil (0.614, texto largo, pocas imágenes).
+
+## 📦 Convertir el modelo para app (Android/iOS)
+
+```python
+from ultralytics import YOLO
+YOLO("piu_ia/yolo26_v1/weights/best.pt").export(format="ncnn")   # Android
+YOLO("piu_ia/yolo26_v1/weights/best.pt").export(format="coreml") # iOS
+```
 
 ---
 *Desarrollado para la comunidad de Pump It Up.*
