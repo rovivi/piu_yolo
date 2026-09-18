@@ -1,0 +1,1 @@
+/Users/rodrigo/dev/python_projects/piu_yolo/images/new/classes.txt
