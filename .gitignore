@@ -19,3 +19,8 @@ build/
 *.cache
 output_piu/
 runs/
+
+# Training run artifacts (keep args.yaml + weights only)
+piu_ia/*/[A-Za-z]*.jpg
+piu_ia/*/[A-Za-z]*.png
+piu_ia/*/results.csv

@@ -1,13 +1,15 @@
-from ultralytics import YOLO
 import os
 
-# Tu config de AMD
+# MUST be before torch/ultralytics import
 os.environ['HSA_OVERRIDE_GFX_VERSION'] = '10.3.0'
+os.environ['HSA_ENABLE_SDMA'] = '0'
+
+from ultralytics import YOLO
 
 def resumir_entrenamiento():
     # 1. Ruta al archivo last.pt (ASEGÚRATE DE QUE ESTA RUTA SEA CORRECTA)
     # Si tu carpeta se llama 'piu_ia', busca dentro de 'improved_v1' o 'improved_v2_adamw'
-    path_al_modelo = 'piu_ia/improved_v2_adamw/weights/last.pt' 
+    path_al_modelo = 'piu_ia/v4_finetune/weights/last.pt'
     
     if not os.path.exists(path_al_modelo):
         print(f"❌ ERROR: No encontré el archivo en {path_al_modelo}")
