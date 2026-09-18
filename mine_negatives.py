@@ -3,7 +3,7 @@ Hard negative mining: corre el modelo en imágenes sin anotar, muestra deteccion
 te deja marcar cuáles son falsos positivos y los agrega al dataset.
 
 Uso:
-  python mine_negatives.py /carpeta/con/imagenes [--conf 0.5] [--model piu_ia/improved_v2_adamw/weights/best.pt]
+  python mine_negatives.py /carpeta/con/imagenes [--conf 0.5] [--model piu_ia/yolo26_v1/weights/best.pt]
   python mine_negatives.py /carpeta/con/imagenes --auto  # agrega todo como negativo (sin revisión manual)
 
 Con --auto: ideal si YA SABES que esas imágenes no tienen objetos válidos.
@@ -13,19 +13,26 @@ Sin --auto: abre cada imagen en una ventana, presiona:
   q = salir
 """
 
-import os
 import sys
 import shutil
 import argparse
 from pathlib import Path
 
-os.environ['HSA_OVERRIDE_GFX_VERSION'] = '10.3.0'
+from gpu import setup_device_env, find_best_weights
+
+setup_device_env()
 
 BASE = Path(__file__).parent
-DEFAULT_MODEL = BASE / "piu_ia" / "improved_v2_adamw" / "weights" / "best.pt"
 NEGATIVES_OUT = BASE / "negatives_mined"
 
 CLASSES = {0: "difficulty", 1: "fullscore", 2: "rank", 3: "score", 4: "song_name"}
+
+IMG_SUFFIXES = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
+
+
+def find_images(folder: Path):
+    return sorted(p for p in folder.iterdir()
+                  if p.is_file() and p.suffix.lower() in IMG_SUFFIXES)
 
 
 def mine(source_dir: str, model_path: str, conf: float, auto: bool):
@@ -37,13 +44,16 @@ def mine(source_dir: str, model_path: str, conf: float, auto: bool):
         sys.exit(1)
 
     src = Path(source_dir)
+    if model_path is None:
+        print("No hay ningún best.pt en piu_ia/ — usa --model para especificar uno")
+        sys.exit(1)
     model_p = Path(model_path)
     if not model_p.exists():
         print(f"Modelo no encontrado: {model_p}")
         print("Usa --model para especificar la ruta al .pt")
         sys.exit(1)
 
-    imgs = sorted(src.glob("*.[jJpP][pPnN][gG]*")) + sorted(src.glob("*.jpeg"))
+    imgs = find_images(src)
     if not imgs:
         print(f"No hay imágenes en {source_dir}")
         sys.exit(1)
@@ -76,7 +86,6 @@ def mine(source_dir: str, model_path: str, conf: float, auto: bool):
 
         # Modo manual: muestra la imagen con bboxes
         import cv2
-        import numpy as np
         img = cv2.imread(str(img_path))
         if img is None:
             continue
@@ -122,10 +131,11 @@ def mine(source_dir: str, model_path: str, conf: float, auto: bool):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("source_dir", help="Carpeta con imágenes a revisar")
-    parser.add_argument("--model", default=str(DEFAULT_MODEL), help="Ruta al best.pt")
+    parser.add_argument("--model", default=None, help="Ruta al best.pt (default: el más nuevo)")
     parser.add_argument("--conf", type=float, default=0.3, help="Confianza mínima (default 0.3)")
     parser.add_argument("--auto", action="store_true",
                         help="Agrega todas como negativas sin revisión manual")
     args = parser.parse_args()
 
-    mine(args.source_dir, args.model, args.conf, args.auto)
+    model_path = args.model or find_best_weights()
+    mine(args.source_dir, model_path, args.conf, args.auto)

@@ -1,0 +1,17 @@
+# Train = originales + augmented/ (degradaciones fotorrealistas offline).
+# Val intocado — benchmarks comparables contra baseline_yolo26_v1.
+train:
+  - images/train
+  - photos/images/train
+  - augmented/images/train
+
+val:
+  - images/val
+  - photos/images/val
+
+names:
+  0: difficulty
+  1: fullscore
+  2: rank
+  3: score
+  4: song_name

@@ -27,3 +27,8 @@ llm_config.json
 piu_ia/*/[A-Za-z]*.jpg
 piu_ia/*/[A-Za-z]*.png
 piu_ia/*/results.csv
+# Disk cache de entrenamiento (regenerable, cache=disk)
+images/**/*.npy
+photos/**/*.npy
+labels/**/*.npy
+augmented/

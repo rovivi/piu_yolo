@@ -1,22 +1,44 @@
-import os
-# Set environment variables BEFORE importing torch
-os.environ["HSA_OVERRIDE_GFX_VERSION"] = "10.3.0"
-os.environ["HSA_ENABLE_SDMA"] = "0"
+"""Diagnóstico de GPU multiplataforma: MPS (Mac Apple Silicon) / ROCm / CUDA / CPU.
+
+Sustituye a simple_check.py. Uso: python check_gpu.py
+"""
+
+from gpu import setup_device_env, find_best_weights
+
+setup_device_env()
+
+import platform
 
 import torch
 
-print(f"PyTorch version: {torch.__version__}")
-print(f"Is CUDA/ROCm available: {torch.cuda.is_available()}")
-print(f"Device count: {torch.cuda.device_count()}")
 
-if torch.cuda.is_available():
-    print(f"Device name: {torch.cuda.get_device_name(0)}")
-    props = torch.cuda.get_device_properties(0)
-    print(f"Device properties: {props}")
-    if hasattr(torch.version, 'hip'):
-        print(f"HIP (ROCm) version: {torch.version.hip}")
-else:
-    print("CUDA/ROCm not available to PyTorch.")
+def main():
+    print(f"Plataforma: {platform.system()} {platform.release()} ({platform.machine()})")
+    print(f"PyTorch: {torch.__version__}")
 
-# Check environment variables
-print(f"HSA_OVERRIDE_GFX_VERSION: {os.environ.get('HSA_OVERRIDE_GFX_VERSION')}")
+    if torch.cuda.is_available():
+        backend = 'ROCm/HIP' if torch.version.hip else 'CUDA'
+        print(f"✅ GPU disponible ({backend} {torch.version.hip or torch.version.cuda})")
+        try:
+            n = torch.cuda.device_count()
+            print(f"   Dispositivos: {n}")
+            for i in range(n):
+                props = torch.cuda.get_device_properties(i)
+                print(f"   [{i}] {props.name} — {props.total_memory / 1e9:.1f} GB")
+        except Exception as e:
+            # torch 2.4.1+rocm6.0 sin amdsmi lanza NameError aquí
+            print(f"   (device_count falló: {e} — usar device 0 igualmente)")
+
+    mps = getattr(torch.backends, 'mps', None)
+    if mps is not None and mps.is_available():
+        print("✅ MPS disponible (Apple Silicon)")
+
+    if not torch.cuda.is_available() and not (mps and mps.is_available()):
+        print("⚠️  Sin GPU — se entrenará en CPU (lento)")
+
+    best = find_best_weights()
+    print(f"Mejor modelo actual: {best or 'ninguno (entrena primero)'}")
+
+
+if __name__ == '__main__':
+    main()

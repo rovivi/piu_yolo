@@ -1,4 +1,4 @@
-path: /home/rodrigo/dev/python_projects/piu_yolo
+# Dataset de frames de video. Rutas relativas a este .yml (portable Linux/Mac).
 train: images/train
 val: images/val
 

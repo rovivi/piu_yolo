@@ -25,13 +25,14 @@ cd piu_yolo
 
 # 2. Entorno virtual
 python3 -m venv venv && source venv/bin/activate
-pip install ultralytics
+pip install -r requirements.txt
 
 # 3. Validar GPU (opcional)
 python check_gpu.py
 
-# 4. Entrenar (detecta device: MPS en Mac, ROCm/CUDA en Linux)
-python training.py
+# 4. Entrenar (detecta device: MPS en Mac M5, ROCm/CUDA en Linux)
+python training.py          # o: ./train.sh
+./train.sh --resume         # continuar el último run interrumpido
 ```
 
 Los pesos finales quedan en `piu_ia/yolo26_v1/weights/best.pt`.
@@ -43,14 +44,16 @@ Los pesos finales quedan en `piu_ia/yolo26_v1/weights/best.pt`.
 ```
 piu_yolo/
 ├── training.py          # ⭐ Entrenamiento principal (YOLO26s, device auto)
-├── continue.py          # Reanudar entrenamiento interrumpido
+├── continue.py          # Resume el run más reciente (busca el last.pt nuevo solo)
+├── gpu.py               # ⭐ Detección device (MPS/ROCm/CUDA) + env ROCm centralizado
 ├── mine_negatives.py    # Hard-negative mining interactivo
 ├── prepare_dataset.py   # Split train/val + gestión de negativos
-├── check_gpu.py         # Diagnóstico de ROCm/CUDA
-├── simple_check.py      # Sanity check de torch
+├── check_gpu.py         # Diagnóstico multiplataforma (MPS/ROCm/CUDA/CPU)
 │
 ├── data.yml             # Dataset de frames de video (160 train / 40 val)
 ├── data_merged.yml      # ⭐ Dataset fusionado (video + fotos), portable
+├── requirements.txt     # Dependencias (ultralytics + opencv)
+├── train.sh             # Lanzador portable (venv/conda/python3, --resume)
 ├── images/labels/       # Frames de video + labels YOLO
 ├── photos/              # ✨ Fotos de cabina/teléfono (44 train / 14 val)
 ├── piu_ia/              # Runs de entrenamiento (checkpoints + args.yaml)
@@ -71,37 +74,49 @@ piu_yolo/
 
 ## 📊 Resultados de Validación
 
-Dataset fusionado (204 train / 54 val), val @ 1024px:
+Dataset fusionado (204 train / 54 val), val @ 1024px (val **intocado** en todos los runs — benchmarks comparables):
 
-| Run | Modelo | mAP50 | mAP50-95 |
+| Run | Receta | mAP50 | mAP50-95 |
 |---|---|---|---|
 | `v5_photos` | YOLOv8n (cadena finetune) | 0.811 | 0.424 |
-| `yolo26_v1` ✅ actual | YOLO26s desde scratch | **0.826** | **0.425** |
+| `yolo26_v1` | YOLO26s desde scratch, sin aug offline | 0.826 | 0.424 |
+| `yolo26_v2` | + aug offline, mixup 0.15, early-stop ep92 | 0.814 | **0.439** |
+| `yolo26_v3` | + aug offline, mixup 0.05, early-stop ep36 | 0.806 | 0.420 |
+| `yolo26_v4` | v3 sin early-stop (anneal completo de cos_lr) | — *en curso* | — |
 
-Por clase (`yolo26_v1`, val final — mAP50 / P / R):
+Por clase (val @1024 — mAP50, con delta vs `yolo26_v1`):
 
-| Clase | mAP50 | Precision | Recall |
+| Clase | v1 | v2 | v3 |
 |---|---|---|---|
-| score | 0.938 | 0.877 | 0.905 |
-| rank | 0.905 | 0.861 | 0.816 |
-| fullscore | 0.86 | 0.849 | 0.804 |
-| difficulty | 0.813 | 0.855 | 0.837 |
-| **song_name** ⚠️ | 0.615 | 0.677 | 0.557 |
+| score | 0.938 | 0.929 (-1) | 0.870 |
+| rank | 0.905 | 0.884 (-2) | 0.857 |
+| fullscore | 0.86 | 0.798 (-6) | 0.830 |
+| difficulty | 0.813 | 0.793 (-2) | 0.771 |
+| **song_name** ⚠️ | 0.613 | 0.668 (**+5.5**, R 0.558→0.693) | **0.700 (+8.7)** |
+
+> **Hallazgos del ciclo v2–v4 (Mac M5 Pro, 24 GB):**
+> - La **augmentación offline** (`augment_dataset.py`: perspectiva ±8°, motion/defocus blur, low-res, JPEG q25-70, glare, gamma) sube `song_name` **+5.5 a +8.7 pts** y su recall **+13 pts** — la clase débil deja de ser tan débil.
+> - El **early-stop con val de 54 imágenes mata el rendimiento**: la patience dispara antes del anneal de `cos_lr` (v2 best ep92, v3 best ep36, ambos sin fase final). v4 = v3 con `patience=epochs` para forzar anneal completo — es el candidato a beat.
+> - `fullscore` y el mAP50 global bajan ~1-6 pts con mixup/copy_paste agresivos (0.15): quedaron en 0.05/0.1 (valores v1).
+> - A imgsz 1280 con batch 12 MPS pide 25.6 GB > 24 GB → thrash. En la Mac: **batch 10 @ 1024** es el techo (14.6 GB).
+>
+> Benchmarks detallados en `benchmarks/*.json`, reproducibles con `python benchmark.py --compare benchmarks/baseline_yolo26_v1.json`.
 
 > `song_name` es la clase débil: texto largo y variable, con pocas imágenes. Prioridad de mejora #1.
 
 ## 🏋️ Entrenamiento
 
-`training.py` está configurado con:
+`training.py` está configurado con (receta v4):
 
-- **Modelo**: `yolo26s.pt` (YOLO26 = NMS-free end-to-end, sin DFL, optimizer MuSGD automático)
-- **Dataset**: `data_merged.yml` — rutas **relativas** al YAML, portable entre máquinas
-- **300 épocas**, `patience=50`, `imgsz=1024`, batch 16
-- **Augmentations pensados para PIU**: rotation 5° (no destruye el texto horizontal), sin shear/rotación agresiva, mosaic activo con `close_mosaic=20`
+- **Modelo**: `yolo26s.pt` (YOLO26 = NMS-free end-to-end, sin DFL, optimizer auto)
+- **Dataset**: `data_aug.yml` (generado por `augment_dataset.py`) = originales + `augmented/`; fallback `data_merged.yml`
+- **150 épocas**, `patience=150` (sin early-stop: el anneal de `cos_lr` es donde se gana), `imgsz=1024`, batch 10 (MPS 24 GB) / 16 (ROCm)
+- **Augmentations**: rotation 5°, sin shear/flips (texto horizontal), mosaic 1.0 con `close_mosaic=20`, mixup 0.05, copy_paste 0.1, `cos_lr=True`, `cache=disk`
+- **Offline**: `python augment_dataset.py --n 1` genera 204 variantes degradadas (perspectiva/blur/lowres/jpeg/glare) — correr UNA vez, es determinista (seed 42)
 
 ```bash
 python training.py              # Entrena YOLO26s con dataset fusionado
-python continue.py              # Resume desde checkpoint interrumpido
+./train.sh --resume             # Resume desde checkpoint interrumpido
 ```
 
 ## 🔴 Hard Negative Mining
@@ -128,8 +143,8 @@ python prepare_dataset.py status     # estadísticas actuales del dataset
 
 | Plataforma | Device | Notes |
 |---|---|---|
-| **Mac Apple Silicon** | `mps` (auto) | `pip install ultralytics` y listo. Los env de ROCm se desactivan solos en Darwin. |
-| **Linux AMD ROCm** | `0` (auto) | torch 2.4.1+rocm6.0 en Ubuntu tiene 2 bugs conocidos: `amdsmi` (NameError) y el crash de AdamW fused con AMP. Workarounds incluidos en script/entorno. |
+| **Mac Apple Silicon (M5)** | `mps` (auto) | AMP se activa — el check interno de ultralytics hace fallback solo si da NaN. Detección centralizada en `gpu.py`. |
+| **Linux AMD ROCm** | `0` (auto) | torch 2.4.1+rocm6.0 en Ubuntu tiene 2 bugs conocidos: `amdsmi` (NameError) y el crash de AdamW fused con AMP (`amp=False` automático vía `gpu.py`). Workarounds incluidos. |
 | Linux/CUDA, CPU | auto | Sin configuración extra |
 
 Detalles en [sección de troubleshooting](#troubleshooting).

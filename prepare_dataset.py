@@ -24,14 +24,16 @@ LABELS_VAL   = BASE / "labels" / "val"
 
 DATA_YML = BASE / "data.yml"
 
-IMG_EXTS = ("*.jpg", "*.jpeg", "*.JPG", "*.JPEG", "*.png", "*.PNG")
+IMG_SUFFIXES = {'.jpg', '.jpeg', '.png', '.webp', '.bmp'}
 
 
 def find_images(folder: Path):
-    imgs = []
-    for ext in IMG_EXTS:
-        imgs.extend(folder.glob(ext))
-    return imgs
+    """Case-insensitive: en macOS los globs *.jpg y *.JPG matchean lo mismo
+    (filesystem case-insensitive) y duplicaban la lista."""
+    if not folder.exists():
+        return []
+    return sorted(p for p in folder.iterdir()
+                  if p.is_file() and p.suffix.lower() in IMG_SUFFIXES)
 
 
 def status():
@@ -88,8 +90,10 @@ def split(val_ratio=0.2, seed=42):
                 (LABELS_TRAIN / f"{stem}.txt").touch()
             moved_train += 1
 
-    # Actualiza data.yml
-    yml_content = f"""path: {BASE}
+    # Actualiza data.yml — sin `path`: las rutas relativas se resuelven contra
+    # el directorio del propio YAML (ultralytics ≥8.3 resuelve `path:` relativo
+    # contra DATASETS_DIR global, así que omitirlo es lo portable)
+    yml_content = f"""# Dataset de frames de video. Rutas relativas a este .yml.
 train: images/train
 val: images/val
 
