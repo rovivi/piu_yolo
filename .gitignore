@@ -20,6 +20,9 @@ build/
 output_piu/
 runs/
 
+# Secrets
+llm_config.json
+
 # Training run artifacts (keep args.yaml + weights only)
 piu_ia/*/[A-Za-z]*.jpg
 piu_ia/*/[A-Za-z]*.png

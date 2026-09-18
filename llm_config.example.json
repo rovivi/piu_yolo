@@ -1,0 +1,5 @@
+{
+  "api_url": "https://api.openai.com/v1/chat/completions",
+  "api_key": "TU_API_KEY_AQUI",
+  "model": "gpt-4o"
+}
