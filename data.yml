@@ -1,6 +1,6 @@
 path: /home/rodrigo/dev/python_projects/piu_yolo
-train: images
-val: images  # Por ahora usamos la misma para validar si tienes pocos datos
+train: images/train
+val: images/val
 
 names:
   0: difficulty
