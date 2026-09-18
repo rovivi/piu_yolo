@@ -157,15 +157,6 @@ Apps de referencia de la app existente: `test_best_model/` (PyInstaller) y el re
 | Run se guarda en `runs/detect/piu_ia/...` | ultralytics ≥8.4 redirige `project` bajo `runs/` | Copiar weights a `piu_ia/<run>/weights/` |
 | Weights de runs viejos no cargan en YOLO26 | Head nuevo sin DFL — incompatibles | Retraine desde `yolo26s.pt`. No intentar finetune de checkpoints v8/v11 |
 
-## 🗺️ Roadmap / Mejores Mejoras Pendientes
-
-- [ ] ⚠️ **SEGURIDAD**: `llm_config.json` contiene una API key real subida al repo — remover del tracking, ignorarla con .gitignore, y **rotar la key** (queda en el historial de commits)
-- [ ] `continue.py` está stale: usa `data.yml` (dataset viejo) y settings AdamW de v8 — portarlo a YOLO26 + `data_merged.yml`
-- [ ] `mine_negatives.py` hardcodea `HSA_OVERRIDE_GFX_VERSION` — extraer a un helper común de compatibilidad multiplataforma
-- [ ] Mejorar `song_name`: anotar más ejemplos (39 de val es poco) o un split por caracteres con OCR
-- [ ] Comparar `yolo26m` en Mac (entrenar 1+ día, mejor mAP si hay tiempo)
-- [ ] Benchmark cuantizado: export int8/fp16 y medir pérdida de mAP vs latencia móvil
-
 ## 📜 Referencias
 
 - [Ultralytics YOLO26 Docs](https://docs.ultralytics.com/models/yolo26)
