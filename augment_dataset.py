@@ -191,13 +191,20 @@ def main():
             h, w = img.shape[:2]
             boxes = load_boxes(lbl, w, h)
             for v in range(args.n):
+                name = f'aug{v}_{im.stem}'
+                out_img = OUT_IMG / f'{name}.jpg'
+                out_lbl = OUT_LBL / f'{name}.txt'
+                if out_img.exists() and out_lbl.exists():
+                    manifest.append({'src': im.name, 'out': name,
+                                     'n_boxes': len(out_lbl.read_text().splitlines())})
+                    total += 1
+                    continue
                 np.random.seed(args.seed + total)  # determinista por imagen
                 aug_img, aug_boxes = augment(img.copy(), [list(b) for b in boxes])
                 if aug_img is None:
                     continue
-                name = f'aug{v}_{im.stem}'
-                cv2.imwrite(str(OUT_IMG / f'{name}.jpg'), aug_img, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                save_boxes(aug_boxes, OUT_LBL / f'{name}.txt', w, h)
+                cv2.imwrite(str(out_img), aug_img, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                save_boxes(aug_boxes, out_lbl, w, h)
                 manifest.append({'src': im.name, 'out': name, 'n_boxes': len(aug_boxes)})
                 total += 1
 
