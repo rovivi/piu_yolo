@@ -1,259 +1,64 @@
 family,old_image,new_image,old_label,new_label
-frame,022b0009-PXL_20250122_223852038.jpg,frame_0001.jpg,022b0009-PXL_20250122_223852038.txt,frame_0001.txt
-frame,053a4664-WhatsApp_Image_2026-01-01_at_1.10.51_PM_1.jpeg,frame_0002.jpeg,053a4664-WhatsApp_Image_2026-01-01_at_1.10.51_PM_1.txt,frame_0002.txt
-frame,08e147e9-WhatsApp_Image_2026-01-01_at_1.07.25_PM_15.jpeg,frame_0003.jpeg,08e147e9-WhatsApp_Image_2026-01-01_at_1.07.25_PM_15.txt,frame_0003.txt
-frame,0bc34b1b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_42.jpeg,frame_0004.jpeg,0bc34b1b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_42.txt,frame_0004.txt
-frame,135e9673-IMG-20250912-WA0025.jpeg,frame_0005.jpeg,135e9673-IMG-20250912-WA0025.txt,frame_0005.txt
-frame,15a87f5f-WhatsApp_Image_2026-01-01_at_1.10.51_PM_24.jpeg,frame_0006.jpeg,15a87f5f-WhatsApp_Image_2026-01-01_at_1.10.51_PM_24.txt,frame_0006.txt
-frame,15ea2c59-WhatsApp_Image_2026-01-01_at_1.09.24_PM_2.jpeg,frame_0007.jpeg,15ea2c59-WhatsApp_Image_2026-01-01_at_1.09.24_PM_2.txt,frame_0007.txt
-frame,194e2c42-20231118_185912.jpg,frame_0008.jpg,194e2c42-20231118_185912.txt,frame_0008.txt
-frame,1aebc82a-WhatsApp_Image_2026-01-01_at_1.07.25_PM_50.jpeg,frame_0009.jpeg,1aebc82a-WhatsApp_Image_2026-01-01_at_1.07.25_PM_50.txt,frame_0009.txt
-frame,1e5aae9a-WhatsApp_Image_2026-01-01_at_1.10.51_PM_9.jpeg,frame_0010.jpeg,1e5aae9a-WhatsApp_Image_2026-01-01_at_1.10.51_PM_9.txt,frame_0010.txt
-frame,20b92630-WhatsApp_Image_2026-01-01_at_1.07.25_PM_2.jpeg,frame_0011.jpeg,20b92630-WhatsApp_Image_2026-01-01_at_1.07.25_PM_2.txt,frame_0011.txt
-frame,2400d851-IMG-20240810-WA0000.jpg,frame_0012.jpg,2400d851-IMG-20240810-WA0000.txt,frame_0012.txt
-frame,251db590-WhatsApp_Image_2026-01-01_at_1.10.51_PM_6.jpeg,frame_0013.jpeg,251db590-WhatsApp_Image_2026-01-01_at_1.10.51_PM_6.txt,frame_0013.txt
-frame,2d6e9b6b-WhatsApp_Image_2026-01-01_at_1.10.51_PM_26.jpeg,frame_0014.jpeg,2d6e9b6b-WhatsApp_Image_2026-01-01_at_1.10.51_PM_26.txt,frame_0014.txt
-frame,2e5b30dc-WhatsApp_Image_2026-01-01_at_1.09.24_PM_7.jpeg,frame_0015.jpeg,2e5b30dc-WhatsApp_Image_2026-01-01_at_1.09.24_PM_7.txt,frame_0015.txt
-frame,2f31e286-PXL_20250224_000340307.jpg,frame_0016.jpg,2f31e286-PXL_20250224_000340307.txt,frame_0016.txt
-frame,31e708bc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_51.jpeg,frame_0017.jpeg,31e708bc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_51.txt,frame_0017.txt
-frame,34686d60-PXL_20251129_223712588.jpg,frame_0018.jpg,34686d60-PXL_20251129_223712588.txt,frame_0018.txt
-frame,36bb678f-IMG-20241031-WA0019.jpg,frame_0019.jpg,36bb678f-IMG-20241031-WA0019.txt,frame_0019.txt
-frame,371209c3-IMG-20250831-WA0021.jpg,frame_0020.jpg,371209c3-IMG-20250831-WA0021.txt,frame_0020.txt
-frame,37e511a8-WhatsApp_Image_2026-01-01_at_1.09.24_PM_1.jpeg,frame_0021.jpeg,37e511a8-WhatsApp_Image_2026-01-01_at_1.09.24_PM_1.txt,frame_0021.txt
-frame,38eb664c-WhatsApp_Image_2026-01-01_at_1.10.50_PM_3.jpeg,frame_0022.jpeg,38eb664c-WhatsApp_Image_2026-01-01_at_1.10.50_PM_3.txt,frame_0022.txt
-frame,39f75388-PXL_20250206_213533248.jpg,frame_0023.jpg,39f75388-PXL_20250206_213533248.txt,frame_0023.txt
-frame,3aece574-IMG-20250418-WA0054.jpg,frame_0024.jpg,3aece574-IMG-20250418-WA0054.txt,frame_0024.txt
-frame,3fbab370-WhatsApp_Image_2026-01-01_at_1.07.25_PM_6.jpeg,frame_0025.jpeg,3fbab370-WhatsApp_Image_2026-01-01_at_1.07.25_PM_6.txt,frame_0025.txt
-frame,43b56192-WhatsApp_Image_2026-01-01_at_1.07.25_PM_25.jpeg,frame_0026.jpeg,43b56192-WhatsApp_Image_2026-01-01_at_1.07.25_PM_25.txt,frame_0026.txt
-frame,43cfed6b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_9.jpeg,frame_0027.jpeg,43cfed6b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_9.txt,frame_0027.txt
-frame,4503b196-WhatsApp_Image_2026-01-01_at_1.09.24_PM_4.jpeg,frame_0028.jpeg,4503b196-WhatsApp_Image_2026-01-01_at_1.09.24_PM_4.txt,frame_0028.txt
-frame,4e4edf6f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_41.jpeg,frame_0029.jpeg,4e4edf6f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_41.txt,frame_0029.txt
-frame,508aa1f2-IMG-20241008-WA0000.jpg,frame_0030.jpg,508aa1f2-IMG-20241008-WA0000.txt,frame_0030.txt
-frame,514822eb-WhatsApp_Image_2026-01-01_at_1.10.51_PM_13.jpeg,frame_0031.jpeg,514822eb-WhatsApp_Image_2026-01-01_at_1.10.51_PM_13.txt,frame_0031.txt
-frame,52e4c961-WhatsApp_Image_2026-01-01_at_1.07.25_PM_45.jpeg,frame_0032.jpeg,52e4c961-WhatsApp_Image_2026-01-01_at_1.07.25_PM_45.txt,frame_0032.txt
-frame,5812b804-WhatsApp_Image_2026-01-01_at_1.07.25_PM_44.jpeg,frame_0033.jpeg,5812b804-WhatsApp_Image_2026-01-01_at_1.07.25_PM_44.txt,frame_0033.txt
-frame,5acf89c4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_1.jpeg,frame_0034.jpeg,5acf89c4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_1.txt,frame_0034.txt
-frame,5d8bbdee-WhatsApp_Image_2026-01-01_at_1.07.25_PM_32.jpeg,frame_0035.jpeg,5d8bbdee-WhatsApp_Image_2026-01-01_at_1.07.25_PM_32.txt,frame_0035.txt
-frame,5dc6e4d0-WhatsApp_Image_2026-01-01_at_1.07.25_PM_27.jpeg,frame_0036.jpeg,5dc6e4d0-WhatsApp_Image_2026-01-01_at_1.07.25_PM_27.txt,frame_0036.txt
-frame,60cc9bd4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_21.jpeg,frame_0037.jpeg,60cc9bd4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_21.txt,frame_0037.txt
-frame,612faf07-WhatsApp_Image_2026-01-01_at_1.07.25_PM_34.jpeg,frame_0038.jpeg,612faf07-WhatsApp_Image_2026-01-01_at_1.07.25_PM_34.txt,frame_0038.txt
-frame,62b2db50-20231129_200247.jpg,frame_0039.jpg,62b2db50-20231129_200247.txt,frame_0039.txt
-frame,69a2f026-WhatsApp_Image_2026-01-01_at_1.09.24_PM_3.jpeg,frame_0040.jpeg,69a2f026-WhatsApp_Image_2026-01-01_at_1.09.24_PM_3.txt,frame_0040.txt
-frame,702d098e-WhatsApp_Image_2026-01-01_at_1.10.51_PM_14.jpeg,frame_0041.jpeg,702d098e-WhatsApp_Image_2026-01-01_at_1.10.51_PM_14.txt,frame_0041.txt
-frame,715770a1-PXL_20251129_224158217.jpg,frame_0042.jpg,715770a1-PXL_20251129_224158217.txt,frame_0042.txt
-frame,7224c8f4-PXL_20251129_223236234.jpg,frame_0043.jpg,7224c8f4-PXL_20251129_223236234.txt,frame_0043.txt
-frame,7250fadf-PXL_20251018_005241528.jpg,frame_0044.jpg,7250fadf-PXL_20251018_005241528.txt,frame_0044.txt
-frame,744be9a1-WhatsApp_Image_2026-01-01_at_1.10.51_PM.jpeg,frame_0045.jpeg,744be9a1-WhatsApp_Image_2026-01-01_at_1.10.51_PM.txt,frame_0045.txt
-frame,75e3d5f5-IMG-20240403-WA0023.jpg,frame_0046.jpg,75e3d5f5-IMG-20240403-WA0023.txt,frame_0046.txt
-frame,788aadd9-WhatsApp_Image_2026-01-01_at_1.09.24_PM_5.jpeg,frame_0047.jpeg,788aadd9-WhatsApp_Image_2026-01-01_at_1.09.24_PM_5.txt,frame_0047.txt
-frame,7f1fd0cc-20231008_201933.jpg,frame_0048.jpg,7f1fd0cc-20231008_201933.txt,frame_0048.txt
-frame,7ffa0f6b-20231118_190821.jpg,frame_0049.jpg,7ffa0f6b-20231118_190821.txt,frame_0049.txt
-frame,80ce6f34-20231106_130403.jpg,frame_0050.jpg,80ce6f34-20231106_130403.txt,frame_0050.txt
-frame,8182b44d-IMG-20240925-WA0015.jpg,frame_0051.jpg,8182b44d-IMG-20240925-WA0015.txt,frame_0051.txt
-frame,81855e23-PXL_20250712_020018790.jpg,frame_0052.jpg,81855e23-PXL_20250712_020018790.txt,frame_0052.txt
-frame,8239396f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_8.jpeg,frame_0053.jpeg,8239396f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_8.txt,frame_0053.txt
-frame,8384c4c6-WhatsApp_Image_2026-01-01_at_1.07.25_PM_28.jpeg,frame_0054.jpeg,8384c4c6-WhatsApp_Image_2026-01-01_at_1.07.25_PM_28.txt,frame_0054.txt
-frame,8493f142-WhatsApp_Image_2026-01-01_at_1.10.50_PM_5.jpeg,frame_0055.jpeg,8493f142-WhatsApp_Image_2026-01-01_at_1.10.50_PM_5.txt,frame_0055.txt
-frame,86d0bc5f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_31.jpeg,frame_0056.jpeg,86d0bc5f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_31.txt,frame_0056.txt
-frame,88cfb67a-WhatsApp_Image_2026-01-01_at_1.09.24_PM_6.jpeg,frame_0057.jpeg,88cfb67a-WhatsApp_Image_2026-01-01_at_1.09.24_PM_6.txt,frame_0057.txt
-frame,88d5ba61-WhatsApp_Image_2026-01-01_at_1.10.51_PM_25.jpeg,frame_0058.jpeg,88d5ba61-WhatsApp_Image_2026-01-01_at_1.10.51_PM_25.txt,frame_0058.txt
-frame,8cff4d45-WhatsApp_Image_2026-01-01_at_1.07.25_PM_40.jpeg,frame_0059.jpeg,8cff4d45-WhatsApp_Image_2026-01-01_at_1.07.25_PM_40.txt,frame_0059.txt
-frame,8f5f986b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_29.jpeg,frame_0060.jpeg,8f5f986b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_29.txt,frame_0060.txt
-frame,945510ab-IMG-20240930-WA0044.jpg,frame_0061.jpg,945510ab-IMG-20240930-WA0044.txt,frame_0061.txt
-frame,94a55dee-IMG-20250415-WA0006.jpg,frame_0062.jpg,94a55dee-IMG-20250415-WA0006.txt,frame_0062.txt
-frame,967c20ff-WhatsApp_Image_2026-01-01_at_1.10.50_PM_2.jpeg,frame_0063.jpeg,967c20ff-WhatsApp_Image_2026-01-01_at_1.10.50_PM_2.txt,frame_0063.txt
-frame,98e1565a-WhatsApp_Image_2026-01-01_at_1.09.24_PM.jpeg,frame_0064.jpeg,98e1565a-WhatsApp_Image_2026-01-01_at_1.09.24_PM.txt,frame_0064.txt
-frame,9c6101c1-WhatsApp_Image_2026-01-01_at_1.07.25_PM_33.jpeg,frame_0065.jpeg,9c6101c1-WhatsApp_Image_2026-01-01_at_1.07.25_PM_33.txt,frame_0065.txt
-frame,9cdf348b-IMG-20250317-WA0025.jpg,frame_0066.jpg,9cdf348b-IMG-20250317-WA0025.txt,frame_0066.txt
-frame,9fc2fd76-WhatsApp_Image_2026-01-01_at_1.07.25_PM_4.jpeg,frame_0067.jpeg,9fc2fd76-WhatsApp_Image_2026-01-01_at_1.07.25_PM_4.txt,frame_0067.txt
-frame,Screenshot From 2026-01-02 18-52-13.png,frame_0068.png,Screenshot From 2026-01-02 18-52-13.txt,frame_0068.txt
-frame,Screenshot From 2026-01-03 21-10-06.png,frame_0069.png,Screenshot From 2026-01-03 21-10-06.txt,frame_0069.txt
-frame,Screenshot From 2026-01-03 21-10-15.png,frame_0070.png,Screenshot From 2026-01-03 21-10-15.txt,frame_0070.txt
-frame,Screenshot From 2026-01-03 21-10-22.png,frame_0071.png,Screenshot From 2026-01-03 21-10-22.txt,frame_0071.txt
-frame,Screenshot From 2026-01-03 21-10-27.png,frame_0072.png,Screenshot From 2026-01-03 21-10-27.txt,frame_0072.txt
-frame,Screenshot From 2026-01-03 21-10-31.png,frame_0073.png,Screenshot From 2026-01-03 21-10-31.txt,frame_0073.txt
-frame,Screenshot From 2026-01-03 21-10-50.png,frame_0074.png,Screenshot From 2026-01-03 21-10-50.txt,frame_0074.txt
-frame,Screenshot From 2026-01-03 21-10-53.png,frame_0075.png,Screenshot From 2026-01-03 21-10-53.txt,frame_0075.txt
-frame,Screenshot From 2026-01-03 21-10-56.png,frame_0076.png,Screenshot From 2026-01-03 21-10-56.txt,frame_0076.txt
-frame,Screenshot From 2026-01-03 21-11-12.png,frame_0077.png,Screenshot From 2026-01-03 21-11-12.txt,frame_0077.txt
-frame,Screenshot From 2026-01-03 21-11-31.png,frame_0078.png,Screenshot From 2026-01-03 21-11-31.txt,frame_0078.txt
-frame,Screenshot From 2026-01-03 21-11-37.png,frame_0079.png,Screenshot From 2026-01-03 21-11-37.txt,frame_0079.txt
-frame,Screenshot From 2026-01-03 21-11-41.png,frame_0080.png,Screenshot From 2026-01-03 21-11-41.txt,frame_0080.txt
-frame,Screenshot From 2026-01-03 21-11-45.png,frame_0081.png,Screenshot From 2026-01-03 21-11-45.txt,frame_0081.txt
-frame,Screenshot From 2026-01-03 21-11-55.png,frame_0082.png,Screenshot From 2026-01-03 21-11-55.txt,frame_0082.txt
-frame,Screenshot From 2026-01-03 21-12-01.png,frame_0083.png,Screenshot From 2026-01-03 21-12-01.txt,frame_0083.txt
-frame,Screenshot From 2026-01-03 21-12-03.png,frame_0084.png,Screenshot From 2026-01-03 21-12-03.txt,frame_0084.txt
-frame,Screenshot From 2026-01-03 21-12-11.png,frame_0085.png,Screenshot From 2026-01-03 21-12-11.txt,frame_0085.txt
-frame,Screenshot From 2026-01-03 21-12-15.png,frame_0086.png,Screenshot From 2026-01-03 21-12-15.txt,frame_0086.txt
-frame,Screenshot From 2026-01-03 21-12-22.png,frame_0087.png,Screenshot From 2026-01-03 21-12-22.txt,frame_0087.txt
-frame,Screenshot From 2026-01-03 21-12-27.png,frame_0088.png,Screenshot From 2026-01-03 21-12-27.txt,frame_0088.txt
-frame,Screenshot From 2026-01-03 21-12-45.png,frame_0089.png,Screenshot From 2026-01-03 21-12-45.txt,frame_0089.txt
-frame,a035a85d-WhatsApp_Image_2026-01-01_at_1.10.51_PM_17.jpeg,frame_0090.jpeg,a035a85d-WhatsApp_Image_2026-01-01_at_1.10.51_PM_17.txt,frame_0090.txt
-frame,a2474ad0-PXL_20251021_181205054.jpg,frame_0091.jpg,a2474ad0-PXL_20251021_181205054.txt,frame_0091.txt
-frame,a29a6194-WhatsApp_Image_2026-01-01_at_1.10.51_PM_7.jpeg,frame_0092.jpeg,a29a6194-WhatsApp_Image_2026-01-01_at_1.10.51_PM_7.txt,frame_0092.txt
-frame,a56d004a-IMG-20231021-WA0026.jpg,frame_0093.jpg,a56d004a-IMG-20231021-WA0026.txt,frame_0093.txt
-frame,a5ab9a37-IMG-20240324-WA0015.jpg,frame_0094.jpg,a5ab9a37-IMG-20240324-WA0015.txt,frame_0094.txt
-frame,a65c50df-IMG-20250831-WA0023.jpg,frame_0095.jpg,a65c50df-IMG-20250831-WA0023.txt,frame_0095.txt
-frame,a8c0e429-WhatsApp_Image_2026-01-01_at_1.07.25_PM_20.jpeg,frame_0096.jpeg,a8c0e429-WhatsApp_Image_2026-01-01_at_1.07.25_PM_20.txt,frame_0096.txt
-frame,a9bca30b-20240522_130538.jpg,frame_0097.jpg,a9bca30b-20240522_130538.txt,frame_0097.txt
-frame,aa747628-WhatsApp_Image_2026-01-01_at_1.10.51_PM_3.jpeg,frame_0098.jpeg,aa747628-WhatsApp_Image_2026-01-01_at_1.10.51_PM_3.txt,frame_0098.txt
-frame,ad11250f-PXL_20251129_225548473.jpg,frame_0099.jpg,ad11250f-PXL_20251129_225548473.txt,frame_0099.txt
-frame,b59dc726-WhatsApp_Image_2026-01-01_at_1.10.51_PM_10.jpeg,frame_0100.jpeg,b59dc726-WhatsApp_Image_2026-01-01_at_1.10.51_PM_10.txt,frame_0100.txt
-frame,b622d3c9-WhatsApp_Image_2026-01-01_at_1.10.51_PM_5.jpeg,frame_0101.jpeg,b622d3c9-WhatsApp_Image_2026-01-01_at_1.10.51_PM_5.txt,frame_0101.txt
-frame,b6ef013f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_18.jpeg,frame_0102.jpeg,b6ef013f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_18.txt,frame_0102.txt
-frame,bf1515a3-WhatsApp_Image_2026-01-01_at_1.07.25_PM_10.jpeg,frame_0103.jpeg,bf1515a3-WhatsApp_Image_2026-01-01_at_1.07.25_PM_10.txt,frame_0103.txt
-frame,c09f4186-WhatsApp_Image_2026-01-01_at_1.10.50_PM_4.jpeg,frame_0104.jpeg,c09f4186-WhatsApp_Image_2026-01-01_at_1.10.50_PM_4.txt,frame_0104.txt
-frame,c0b47020-20231028_212731.jpg,frame_0105.jpg,c0b47020-20231028_212731.txt,frame_0105.txt
-frame,c2f516fc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_26.jpeg,frame_0106.jpeg,c2f516fc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_26.txt,frame_0106.txt
-frame,c46822b8-WhatsApp_Image_2026-01-01_at_1.07.25_PM_23.jpeg,frame_0107.jpeg,c46822b8-WhatsApp_Image_2026-01-01_at_1.07.25_PM_23.txt,frame_0107.txt
-frame,c489b161-WhatsApp_Image_2026-01-01_at_1.07.25_PM_13.jpeg,frame_0108.jpeg,c489b161-WhatsApp_Image_2026-01-01_at_1.07.25_PM_13.txt,frame_0108.txt
-frame,c692a6d9-WhatsApp_Image_2026-01-01_at_1.10.51_PM_28.jpeg,frame_0109.jpeg,c692a6d9-WhatsApp_Image_2026-01-01_at_1.10.51_PM_28.txt,frame_0109.txt
-frame,c8fb328f-20241125_132309.jpg,frame_0110.jpg,c8fb328f-20241125_132309.txt,frame_0110.txt
-frame,c8fe5414-WhatsApp_Image_2026-01-01_at_1.10.51_PM_27.jpeg,frame_0111.jpeg,c8fe5414-WhatsApp_Image_2026-01-01_at_1.10.51_PM_27.txt,frame_0111.txt
-frame,c97b1e9b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_24.jpeg,frame_0112.jpeg,c97b1e9b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_24.txt,frame_0112.txt
-frame,ca697477-WhatsApp_Image_2026-01-01_at_1.10.50_PM_1.jpeg,frame_0113.jpeg,ca697477-WhatsApp_Image_2026-01-01_at_1.10.50_PM_1.txt,frame_0113.txt
-frame,cc5250f7-WhatsApp_Image_2026-01-01_at_1.07.25_PM_46.jpeg,frame_0114.jpeg,cc5250f7-WhatsApp_Image_2026-01-01_at_1.07.25_PM_46.txt,frame_0114.txt
-frame,d402fb36-IMG-20240326-WA0031.jpg,frame_0115.jpg,d402fb36-IMG-20240326-WA0031.txt,frame_0115.txt
-frame,d4075772-IMG-20231005-WA0039.jpg,frame_0116.jpg,d4075772-IMG-20231005-WA0039.txt,frame_0116.txt
-frame,d493741e-IMG-20250831-WA0019.jpg,frame_0117.jpg,d493741e-IMG-20250831-WA0019.txt,frame_0117.txt
-frame,d5a6ffcf-WhatsApp_Image_2026-01-01_at_1.07.25_PM_38.jpeg,frame_0118.jpeg,d5a6ffcf-WhatsApp_Image_2026-01-01_at_1.07.25_PM_38.txt,frame_0118.txt
-frame,db18d924-WhatsApp_Image_2026-01-01_at_1.10.51_PM_21.jpeg,frame_0119.jpeg,db18d924-WhatsApp_Image_2026-01-01_at_1.10.51_PM_21.txt,frame_0119.txt
-frame,dced92ee-WhatsApp_Image_2026-01-01_at_1.07.25_PM_12.jpeg,frame_0120.jpeg,dced92ee-WhatsApp_Image_2026-01-01_at_1.07.25_PM_12.txt,frame_0120.txt
-frame,dd89042d-IMG-20241120-WA0054.jpg,frame_0121.jpg,dd89042d-IMG-20241120-WA0054.txt,frame_0121.txt
-frame,df40c605-IMG-20240216-WA0007.jpg,frame_0122.jpg,df40c605-IMG-20240216-WA0007.txt,frame_0122.txt
-frame,e2149607-WhatsApp_Image_2026-01-01_at_1.07.25_PM_52.jpeg,frame_0123.jpeg,e2149607-WhatsApp_Image_2026-01-01_at_1.07.25_PM_52.txt,frame_0123.txt
-frame,e500cdec-IMG-20231221-WA0039.jpg,frame_0124.jpg,e500cdec-IMG-20231221-WA0039.txt,frame_0124.txt
-frame,e7343655-WhatsApp_Image_2026-01-01_at_1.07.25_PM_14.jpeg,frame_0125.jpeg,e7343655-WhatsApp_Image_2026-01-01_at_1.07.25_PM_14.txt,frame_0125.txt
-frame,ee4f7db5-IMG-20241023-WA0008.jpg,frame_0126.jpg,ee4f7db5-IMG-20241023-WA0008.txt,frame_0126.txt
-frame,ee558ee4-IMG-20240213-WA0012.jpg,frame_0127.jpg,ee558ee4-IMG-20240213-WA0012.txt,frame_0127.txt
-frame,efdb8f26-20231118_185915.jpg,frame_0128.jpg,efdb8f26-20231118_185915.txt,frame_0128.txt
-frame,f01b32f8-WhatsApp_Image_2026-01-01_at_1.07.25_PM_17.jpeg,frame_0129.jpeg,f01b32f8-WhatsApp_Image_2026-01-01_at_1.07.25_PM_17.txt,frame_0129.txt
-frame,f3c838c6-IMG-20231012-WA0047.jpg,frame_0130.jpg,f3c838c6-IMG-20231012-WA0047.txt,frame_0130.txt
-frame,f3cdde20-20231031_172948.jpg,frame_0131.jpg,f3cdde20-20231031_172948.txt,frame_0131.txt
-frame,f516f895-WhatsApp_Image_2026-01-01_at_1.07.25_PM_30.jpeg,frame_0132.jpeg,f516f895-WhatsApp_Image_2026-01-01_at_1.07.25_PM_30.txt,frame_0132.txt
-frame,f697ca9c-WhatsApp_Image_2026-01-01_at_1.07.25_PM_39.jpeg,frame_0133.jpeg,f697ca9c-WhatsApp_Image_2026-01-01_at_1.07.25_PM_39.txt,frame_0133.txt
-frame,f6dba4d5-PXL_20250320_033712222.jpg,frame_0134.jpg,f6dba4d5-PXL_20250320_033712222.txt,frame_0134.txt
-frame,f83b8104-WhatsApp_Image_2026-01-01_at_1.10.50_PM.jpeg,frame_0135.jpeg,f83b8104-WhatsApp_Image_2026-01-01_at_1.10.50_PM.txt,frame_0135.txt
-frame,f973fcca-WhatsApp_Image_2026-01-01_at_1.10.51_PM_23.jpeg,frame_0136.jpeg,f973fcca-WhatsApp_Image_2026-01-01_at_1.10.51_PM_23.txt,frame_0136.txt
-frame,f9748ddb-WhatsApp_Image_2026-01-01_at_1.10.51_PM_22.jpeg,frame_0137.jpeg,f9748ddb-WhatsApp_Image_2026-01-01_at_1.10.51_PM_22.txt,frame_0137.txt
-frame,fbb8de86-IMG-20250120-WA0047.jpeg,frame_0138.jpeg,fbb8de86-IMG-20250120-WA0047.txt,frame_0138.txt
-frame,ff29f770-20230818_083035.jpg,frame_0139.jpg,ff29f770-20230818_083035.txt,frame_0139.txt
-frame,frame-115.png,frame_0140.png,frame-115.txt,frame_0140.txt
-frame,frame-161.png,frame_0141.png,frame-161.txt,frame_0141.txt
-frame,frame-44.png,frame_0142.png,frame-44.txt,frame_0142.txt
-frame,frame-45.png,frame_0143.png,frame-45.txt,frame_0143.txt
-frame,neg_17TePYOKs28_t0067_fp.jpg,frame_0144.jpg,neg_17TePYOKs28_t0067_fp.txt,frame_0144.txt
-frame,neg_FSyU2jmL7Mg_t0013_fp.jpg,frame_0145.jpg,neg_FSyU2jmL7Mg_t0013_fp.txt,frame_0145.txt
-frame,neg_SYr_oWpGbdY_t0000_fp.jpg,frame_0146.jpg,neg_SYr_oWpGbdY_t0000_fp.txt,frame_0146.txt
-frame,neg_SYr_oWpGbdY_t0011_fp.jpg,frame_0147.jpg,neg_SYr_oWpGbdY_t0011_fp.txt,frame_0147.txt
-frame,neg_SYr_oWpGbdY_t0039_fp.jpg,frame_0148.jpg,neg_SYr_oWpGbdY_t0039_fp.txt,frame_0148.txt
-frame,neg_SYr_oWpGbdY_t0048_fp.jpg,frame_0149.jpg,neg_SYr_oWpGbdY_t0048_fp.txt,frame_0149.txt
-frame,neg_SYr_oWpGbdY_t0054_fp.jpg,frame_0150.jpg,neg_SYr_oWpGbdY_t0054_fp.txt,frame_0150.txt
-frame,neg_SYr_oWpGbdY_t0058_fp.jpg,frame_0151.jpg,neg_SYr_oWpGbdY_t0058_fp.txt,frame_0151.txt
-frame,neg_SYr_oWpGbdY_t0076_fp.jpg,frame_0152.jpg,neg_SYr_oWpGbdY_t0076_fp.txt,frame_0152.txt
-frame,neg_SYr_oWpGbdY_t0079_fp.jpg,frame_0153.jpg,neg_SYr_oWpGbdY_t0079_fp.txt,frame_0153.txt
-frame,neg_SYr_oWpGbdY_t0084_fp.jpg,frame_0154.jpg,neg_SYr_oWpGbdY_t0084_fp.txt,frame_0154.txt
-frame,neg_SYr_oWpGbdY_t0087_fp.jpg,frame_0155.jpg,neg_SYr_oWpGbdY_t0087_fp.txt,frame_0155.txt
-frame,neg_SYr_oWpGbdY_t0090_fp.jpg,frame_0156.jpg,neg_SYr_oWpGbdY_t0090_fp.txt,frame_0156.txt
-frame,neg_SYr_oWpGbdY_t0113_fp.jpg,frame_0157.jpg,neg_SYr_oWpGbdY_t0113_fp.txt,frame_0157.txt
-frame,neg_SYr_oWpGbdY_t0125_fp.jpg,frame_0158.jpg,neg_SYr_oWpGbdY_t0125_fp.txt,frame_0158.txt
-frame,neg__GqMpccxKio_t0017_fp.jpg,frame_0159.jpg,neg__GqMpccxKio_t0017_fp.txt,frame_0159.txt
-frame,neg_mZdTOcxEqd0_t0040_fp.jpg,frame_0160.jpg,neg_mZdTOcxEqd0_t0040_fp.txt,frame_0160.txt
-frame,06b7934a-20240408_191201.jpg,frame_0161.jpg,06b7934a-20240408_191201.txt,frame_0161.txt
-frame,08597f7b-WhatsApp_Image_2026-01-01_at_1.10.51_PM_4.jpeg,frame_0162.jpeg,08597f7b-WhatsApp_Image_2026-01-01_at_1.10.51_PM_4.txt,frame_0162.txt
-frame,09ab7a5b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_5.jpeg,frame_0163.jpeg,09ab7a5b-WhatsApp_Image_2026-01-01_at_1.07.25_PM_5.txt,frame_0163.txt
-frame,1d30a128-IMG-20240217-WA0023.jpg,frame_0164.jpg,1d30a128-IMG-20240217-WA0023.txt,frame_0164.txt
-frame,1e4ea939-IMG-20250831-WA0025.jpg,frame_0165.jpg,1e4ea939-IMG-20250831-WA0025.txt,frame_0165.txt
-frame,201b91ef-PXL_20251211_170252694.jpg,frame_0166.jpg,201b91ef-PXL_20251211_170252694.txt,frame_0166.txt
-frame,3b49bc0c-WhatsApp_Image_2026-01-01_at_1.07.25_PM_16.jpeg,frame_0167.jpeg,3b49bc0c-WhatsApp_Image_2026-01-01_at_1.07.25_PM_16.txt,frame_0167.txt
-frame,42637dc1-IMG-20241026-WA0023.jpg,frame_0168.jpg,42637dc1-IMG-20241026-WA0023.txt,frame_0168.txt
-frame,45715c8e-WhatsApp_Image_2026-01-01_at_1.07.25_PM_48.jpeg,frame_0169.jpeg,45715c8e-WhatsApp_Image_2026-01-01_at_1.07.25_PM_48.txt,frame_0169.txt
-frame,47b2c6da-WhatsApp_Image_2026-01-01_at_1.10.51_PM_2.jpeg,frame_0170.jpeg,47b2c6da-WhatsApp_Image_2026-01-01_at_1.10.51_PM_2.txt,frame_0170.txt
-frame,53e56ae1-WhatsApp_Image_2026-01-01_at_1.07.25_PM_47.jpeg,frame_0171.jpeg,53e56ae1-WhatsApp_Image_2026-01-01_at_1.07.25_PM_47.txt,frame_0171.txt
-frame,599506c9-WhatsApp_Image_2026-01-01_at_1.07.25_PM_3.jpeg,frame_0172.jpeg,599506c9-WhatsApp_Image_2026-01-01_at_1.07.25_PM_3.txt,frame_0172.txt
-frame,59de3c64-WhatsApp_Image_2026-01-01_at_1.10.51_PM_19.jpeg,frame_0173.jpeg,59de3c64-WhatsApp_Image_2026-01-01_at_1.10.51_PM_19.txt,frame_0173.txt
-frame,5d491032-20240409_185456.jpg,frame_0174.jpg,5d491032-20240409_185456.txt,frame_0174.txt
-frame,7c4cc0fc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_35.jpeg,frame_0175.jpeg,7c4cc0fc-WhatsApp_Image_2026-01-01_at_1.07.25_PM_35.txt,frame_0175.txt
-frame,805e743e-WhatsApp_Image_2026-01-01_at_1.10.51_PM_16.jpeg,frame_0176.jpeg,805e743e-WhatsApp_Image_2026-01-01_at_1.10.51_PM_16.txt,frame_0176.txt
-frame,813c08f7-WhatsApp_Image_2026-01-01_at_1.10.51_PM_18.jpeg,frame_0177.jpeg,813c08f7-WhatsApp_Image_2026-01-01_at_1.10.51_PM_18.txt,frame_0177.txt
-frame,82119568-WhatsApp_Image_2026-01-01_at_1.07.25_PM_22.jpeg,frame_0178.jpeg,82119568-WhatsApp_Image_2026-01-01_at_1.07.25_PM_22.txt,frame_0178.txt
-frame,8bfaadb4-WhatsApp_Image_2026-01-01_at_1.10.51_PM_20.jpeg,frame_0179.jpeg,8bfaadb4-WhatsApp_Image_2026-01-01_at_1.10.51_PM_20.txt,frame_0179.txt
-frame,Screenshot From 2026-01-03 21-11-58.png,frame_0180.png,Screenshot From 2026-01-03 21-11-58.txt,frame_0180.txt
-frame,a04d13cc-20230815_153831.jpg,frame_0181.jpg,a04d13cc-20230815_153831.txt,frame_0181.txt
-frame,a0ff0b00-WhatsApp_Image_2026-01-01_at_1.10.51_PM_12.jpeg,frame_0182.jpeg,a0ff0b00-WhatsApp_Image_2026-01-01_at_1.10.51_PM_12.txt,frame_0182.txt
-frame,ae389843-WhatsApp_Image_2026-01-01_at_1.10.51_PM_8.jpeg,frame_0183.jpeg,ae389843-WhatsApp_Image_2026-01-01_at_1.10.51_PM_8.txt,frame_0183.txt
-frame,b0965637-WhatsApp_Image_2026-01-01_at_1.07.25_PM_11.jpeg,frame_0184.jpeg,b0965637-WhatsApp_Image_2026-01-01_at_1.07.25_PM_11.txt,frame_0184.txt
-frame,b89e551a-WhatsApp_Image_2026-01-01_at_1.07.25_PM_36.jpeg,frame_0185.jpeg,b89e551a-WhatsApp_Image_2026-01-01_at_1.07.25_PM_36.txt,frame_0185.txt
-frame,bf4bbe78-WhatsApp_Image_2026-01-01_at_1.07.25_PM_43.jpeg,frame_0186.jpeg,bf4bbe78-WhatsApp_Image_2026-01-01_at_1.07.25_PM_43.txt,frame_0186.txt
-frame,c0a51d98-20231005_221340.jpg,frame_0187.jpg,c0a51d98-20231005_221340.txt,frame_0187.txt
-frame,c6e7a0a6-WhatsApp_Image_2026-01-01_at_1.07.25_PM_19.jpeg,frame_0188.jpeg,c6e7a0a6-WhatsApp_Image_2026-01-01_at_1.07.25_PM_19.txt,frame_0188.txt
-frame,edd0f3c4-WhatsApp_Image_2026-01-01_at_1.10.51_PM_11.jpeg,frame_0189.jpeg,edd0f3c4-WhatsApp_Image_2026-01-01_at_1.10.51_PM_11.txt,frame_0189.txt
-frame,f0eb2284-WhatsApp_Image_2026-01-01_at_1.07.25_PM.jpeg,frame_0190.jpeg,f0eb2284-WhatsApp_Image_2026-01-01_at_1.07.25_PM.txt,frame_0190.txt
-frame,f291779f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_49.jpeg,frame_0191.jpeg,f291779f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_49.txt,frame_0191.txt
-frame,f411aac4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_37.jpeg,frame_0192.jpeg,f411aac4-WhatsApp_Image_2026-01-01_at_1.07.25_PM_37.txt,frame_0192.txt
-frame,f946e29f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_7.jpeg,frame_0193.jpeg,f946e29f-WhatsApp_Image_2026-01-01_at_1.07.25_PM_7.txt,frame_0193.txt
-frame,fa988786-WhatsApp_Image_2026-01-01_at_1.10.51_PM_15.jpeg,frame_0194.jpeg,fa988786-WhatsApp_Image_2026-01-01_at_1.10.51_PM_15.txt,frame_0194.txt
-frame,fd19e6ca-IMG-20241201-WA0039.jpg,frame_0195.jpg,fd19e6ca-IMG-20241201-WA0039.txt,frame_0195.txt
-frame,neg_SYr_oWpGbdY_t0062_fp.jpg,frame_0196.jpg,neg_SYr_oWpGbdY_t0062_fp.txt,frame_0196.txt
-frame,neg_SYr_oWpGbdY_t0066_fp.jpg,frame_0197.jpg,neg_SYr_oWpGbdY_t0066_fp.txt,frame_0197.txt
-frame,neg_SYr_oWpGbdY_t0093_fp.jpg,frame_0198.jpg,neg_SYr_oWpGbdY_t0093_fp.txt,frame_0198.txt
-frame,neg_SYr_oWpGbdY_t0101_fp.jpg,frame_0199.jpg,neg_SYr_oWpGbdY_t0101_fp.txt,frame_0199.txt
-frame,neg_SYr_oWpGbdY_t0107_fp.jpg,frame_0200.jpg,neg_SYr_oWpGbdY_t0107_fp.txt,frame_0200.txt
-photo,748265092_122111036673336375_8293453106367209619_n.jpg,photo_0001.jpg,748265092_122111036673336375_8293453106367209619_n.txt,photo_0001.txt
-photo,750493418_122111036631336375_6065929666086300349_n.jpg,photo_0002.jpg,750493418_122111036631336375_6065929666086300349_n.txt,photo_0002.txt
-photo,753298391_37028778283435942_2783972764767263689_n.jpg,photo_0003.jpg,753298391_37028778283435942_2783972764767263689_n.txt,photo_0003.txt
-photo,756525554_37137671972546572_4470398515798779686_n.jpg,photo_0004.jpg,756525554_37137671972546572_4470398515798779686_n.txt,photo_0004.txt
-photo,759078844_38444370148495103_4866214509437339834_n.jpg,photo_0005.jpg,759078844_38444370148495103_4866214509437339834_n.txt,photo_0005.txt
-photo,759932387_38444370101828441_8025955123919655329_n.jpg,photo_0006.jpg,759932387_38444370101828441_8025955123919655329_n.txt,photo_0006.txt
-photo,760620783_122112649563336375_8013546771286671648_n.jpg,photo_0007.jpg,760620783_122112649563336375_8013546771286671648_n.txt,photo_0007.txt
-photo,761462502_122112649605336375_4946171405434674628_n.jpg,photo_0008.jpg,761462502_122112649605336375_4946171405434674628_n.txt,photo_0008.txt
-photo,761729756_37226704610309974_822133545978425329_n.jpg,photo_0009.jpg,761729756_37226704610309974_822133545978425329_n.txt,photo_0009.txt
-photo,763137594_3044862415849703_525794618140775647_n.jpg,photo_0010.jpg,763137594_3044862415849703_525794618140775647_n.txt,photo_0010.txt
-photo,766241603_3048106432191968_5430175481341630743_n.jpg,photo_0011.jpg,766241603_3048106432191968_5430175481341630743_n.txt,photo_0011.txt
-photo,768962932_122113527333336375_13778056947482452_n.jpg,photo_0012.jpg,768962932_122113527333336375_13778056947482452_n.txt,photo_0012.txt
-photo,768962990_122113527375336375_4271142644541505704_n.jpg,photo_0013.jpg,768962990_122113527375336375_4271142644541505704_n.txt,photo_0013.txt
-photo,768963130_37378140761833024_2505748080599868581_n.jpg,photo_0014.jpg,768963130_37378140761833024_2505748080599868581_n.txt,photo_0014.txt
-photo,768987788_122113527291336375_7347447888670189900_n.jpg,photo_0015.jpg,768987788_122113527291336375_7347447888670189900_n.txt,photo_0015.txt
-photo,769131804_122113604199336375_4258207537538465185_n.jpg,photo_0016.jpg,769131804_122113604199336375_4258207537538465185_n.txt,photo_0016.txt
-photo,769144646_122113628133336375_4955986028509141146_n.jpg,photo_0017.jpg,769144646_122113628133336375_4955986028509141146_n.txt,photo_0017.txt
-photo,769313055_3048106308858647_3837841706722717844_n.jpg,photo_0018.jpg,769313055_3048106308858647_3837841706722717844_n.txt,photo_0018.txt
-photo,774264638_37592815073698924_7546624467993756131_n.jpg,photo_0019.jpg,774264638_37592815073698924_7546624467993756131_n.txt,photo_0019.txt
-photo,782890740_37760437483603348_7683372889307677466_n.jpg,photo_0020.jpg,782890740_37760437483603348_7683372889307677466_n.txt,photo_0020.txt
-photo,784003336_3066018153734129_4356694185249365229_n.jpg,photo_0021.jpg,784003336_3066018153734129_4356694185249365229_n.txt,photo_0021.txt
-photo,784233147_122115184515336375_7585763399272204090_n.jpg,photo_0022.jpg,784233147_122115184515336375_7585763399272204090_n.txt,photo_0022.txt
-photo,784233161_122115184473336375_8433407864374995230_n.jpg,photo_0023.jpg,784233161_122115184473336375_8433407864374995230_n.txt,photo_0023.txt
-photo,785282278_3066018077067470_2252129582711554071_n.jpg,photo_0024.jpg,785282278_3066018077067470_2252129582711554071_n.txt,photo_0024.txt
-photo,788562783_3068892396780038_2013288812723653578_n.jpg,photo_0025.jpg,788562783_3068892396780038_2013288812723653578_n.txt,photo_0025.txt
-photo,790434555_122116310655336375_6457411548167238695_n.jpg,photo_0026.jpg,790434555_122116310655336375_6457411548167238695_n.txt,photo_0026.txt
-photo,791465596_28646526644944408_5701663677566837668_n.jpg,photo_0027.jpg,791465596_28646526644944408_5701663677566837668_n.txt,photo_0027.txt
-photo,791974941_3073946419607969_4169268370923131978_n.jpg,photo_0028.jpg,791974941_3073946419607969_4169268370923131978_n.txt,photo_0028.txt
-photo,792441257_10247134809449294_433881343280679493_n.jpg,photo_0029.jpg,792441257_10247134809449294_433881343280679493_n.txt,photo_0029.txt
-photo,793212531_38015140754799685_4496338087817338179_n.jpg,photo_0030.jpg,793212531_38015140754799685_4496338087817338179_n.txt,photo_0030.txt
-photo,793212617_38015140684799692_5518169740418366935_n.jpg,photo_0031.jpg,793212617_38015140684799692_5518169740418366935_n.txt,photo_0031.txt
-photo,793867723_3075884712747473_3475128898776489005_n.jpg,photo_0032.jpg,793867723_3075884712747473_3475128898776489005_n.txt,photo_0032.txt
-photo,794385429_3075965196072758_2208216278401301958_n.jpg,photo_0033.jpg,794385429_3075965196072758_2208216278401301958_n.txt,photo_0033.txt
-photo,798894665_10247134808449269_4368374568066281616_n.jpg,photo_0034.jpg,798894665_10247134808449269_4368374568066281616_n.txt,photo_0034.txt
-photo,799143935_122117000487336375_4704239398143410011_n.jpg,photo_0035.jpg,799143935_122117000487336375_4704239398143410011_n.txt,photo_0035.txt
-photo,799202570_1581734230163165_5868987236545716208_n.jpg,photo_0036.jpg,799202570_1581734230163165_5868987236545716208_n.txt,photo_0036.txt
-photo,799561563_1726075232485958_7171833061160409463_n.jpeg,photo_0037.jpeg,799561563_1726075232485958_7171833061160409463_n.txt,photo_0037.txt
-photo,799603098_1581734206829834_4174675101133397532_n.jpg,photo_0038.jpg,799603098_1581734206829834_4174675101133397532_n.txt,photo_0038.txt
-photo,799724591_28746831784903148_5142608597533959604_n.jpg,photo_0039.jpg,799724591_28746831784903148_5142608597533959604_n.txt,photo_0039.txt
-photo,799770527_1581734220163166_3948545980689184033_n (1).jpg,photo_0040.jpg,799770527_1581734220163166_3948545980689184033_n (1).txt,photo_0040.txt
-photo,799770527_1581734220163166_3948545980689184033_n.jpg,photo_0041.jpg,799770527_1581734220163166_3948545980689184033_n.txt,photo_0041.txt
-photo,799972293_1581734216829833_8040931571982818855_n.jpg,photo_0042.jpg,799972293_1581734216829833_8040931571982818855_n.txt,photo_0042.txt
-photo,800259601_1581734223496499_2288951928289665213_n.jpg,photo_0043.jpg,800259601_1581734223496499_2288951928289665213_n.txt,photo_0043.txt
-photo,800862888_1581734213496500_910524744880379805_n.jpg,photo_0044.jpg,800862888_1581734213496500_910524744880379805_n.txt,photo_0044.txt
-photo,759642534_3040975842905027_3217809878231048528_n.jpg,photo_0045.jpg,759642534_3040975842905027_3217809878231048528_n.txt,photo_0045.txt
-photo,760620781_122112649647336375_6862454236386741064_n.jpg,photo_0046.jpg,760620781_122112649647336375_6862454236386741064_n.txt,photo_0046.txt
-photo,763762395_37378027441844356_5292507835776334879_n.jpg,photo_0047.jpg,763762395_37378027441844356_5292507835776334879_n.txt,photo_0047.txt
-photo,783857709_37760436840270079_1198323829534180073_n.jpg,photo_0048.jpg,783857709_37760436840270079_1198323829534180073_n.txt,photo_0048.txt
-photo,784242732_37760438426936587_3818792909655165150_n.jpg,photo_0049.jpg,784242732_37760438426936587_3818792909655165150_n.txt,photo_0049.txt
-photo,787574282_3068477310154880_7569800588419058150_n.jpg,photo_0050.jpg,787574282_3068477310154880_7569800588419058150_n.txt,photo_0050.txt
-photo,791942785_3074483386220939_1991818925467464239_n.jpg,photo_0051.jpg,791942785_3074483386220939_1991818925467464239_n.txt,photo_0051.txt
-photo,793212498_38015140728133021_7036772031909310840_n.jpg,photo_0052.jpg,793212498_38015140728133021_7036772031909310840_n.txt,photo_0052.txt
-photo,798263716_122117000535336375_2116360898032993870_n.jpg,photo_0053.jpg,798263716_122117000535336375_2116360898032993870_n.txt,photo_0053.txt
-photo,798894701_122117150223336375_1478539421243007842_n.jpg,photo_0054.jpg,798894701_122117150223336375_1478539421243007842_n.txt,photo_0054.txt
-photo,799264471_1581734210163167_884651968281477242_n.jpg,photo_0055.jpg,799264471_1581734210163167_884651968281477242_n.txt,photo_0055.txt
-photo,799676852_1581734203496501_3348142546497837139_n.jpg,photo_0056.jpg,799676852_1581734203496501_3348142546497837139_n.txt,photo_0056.txt
-photo,800945526_1581734226829832_7404042326478769704_n.jpg,photo_0057.jpg,800945526_1581734226829832_7404042326478769704_n.txt,photo_0057.txt
-photo,image.png,photo_0058.png,image.txt,photo_0058.txt
+frame,752107057_3109154799284131_7440322792602840071_n.jpg,frame_0201.jpg,752107057_3109154799284131_7440322792602840071_n.txt,frame_0201.txt
+frame,752488700_3110237195842558_8613526301335210037_n.jpg,frame_0202.jpg,752488700_3110237195842558_8613526301335210037_n.txt,frame_0202.txt
+frame,753164113_3109261529273458_3269680644314744759_n.jpg,frame_0203.jpg,753164113_3109261529273458_3269680644314744759_n.txt,frame_0203.txt
+frame,753241673_3109584412574503_876410147801455554_n.jpg,frame_0204.jpg,753241673_3109584412574503_876410147801455554_n.txt,frame_0204.txt
+frame,753288109_3107153722817572_4865296228075811178_n.jpg,frame_0205.jpg,753288109_3107153722817572_4865296228075811178_n.txt,frame_0205.txt
+frame,761280300_3118156995050578_5499502110109645766_n.jpg,frame_0206.jpg,761280300_3118156995050578_5499502110109645766_n.txt,frame_0206.txt
+frame,776222360_3134118836787727_5821430833079145629_n.jpg,frame_0207.jpg,776222360_3134118836787727_5821430833079145629_n.txt,frame_0207.txt
+frame,777298009_3134975063368771_5717026007798408244_n.jpg,frame_0208.jpg,777298009_3134975063368771_5717026007798408244_n.txt,frame_0208.txt
+frame,779134148_3134173766782234_9061778989615872243_n.jpg,frame_0209.jpg,779134148_3134173766782234_9061778989615872243_n.txt,frame_0209.txt
+frame,781293045_3137217116477899_8186265990561119751_n.jpg,frame_0210.jpg,781293045_3137217116477899_8186265990561119751_n.txt,frame_0210.txt
+frame,783452784_3137840413082236_1944345023354925504_n.jpg,frame_0211.jpg,783452784_3137840413082236_1944345023354925504_n.txt,frame_0211.txt
+frame,786342964_3144958145703796_3799882826124502448_n.jpg,frame_0212.jpg,786342964_3144958145703796_3799882826124502448_n.txt,frame_0212.txt
+frame,786616707_3144993659033578_5099906613531166286_n.jpg,frame_0213.jpg,786616707_3144993659033578_5099906613531166286_n.txt,frame_0213.txt
+frame,791130090_3149084058624538_4814868641329831161_n.jpg,frame_0214.jpg,791130090_3149084058624538_4814868641329831161_n.txt,frame_0214.txt
+frame,791246555_3148649575334653_693589519763975338_n.jpg,frame_0215.jpg,791246555_3148649575334653_693589519763975338_n.txt,frame_0215.txt
+frame,792807169_3150090535190557_167819475386793100_n.jpg,frame_0216.jpg,792807169_3150090535190557_167819475386793100_n.txt,frame_0216.txt
+frame,793337091_10231433123440673_948437208188655242_n.jpg,frame_0217.jpg,793337091_10231433123440673_948437208188655242_n.txt,frame_0217.txt
+frame,794394831_10231433122480649_8245657202698097816_n.jpg,frame_0218.jpg,794394831_10231433122480649_8245657202698097816_n.txt,frame_0218.txt
+frame,794484938_10231433120080589_5646765063739263255_n.jpg,frame_0219.jpg,794484938_10231433120080589_5646765063739263255_n.txt,frame_0219.txt
+frame,794560971_10231433126800757_6371343794215583041_n.jpg,frame_0220.jpg,794560971_10231433126800757_6371343794215583041_n.txt,frame_0220.txt
+frame,797336855_3163243847208559_5933771732280846040_n.jpg,frame_0221.jpg,797336855_3163243847208559_5933771732280846040_n.txt,frame_0221.txt
+frame,800074111_970174286101848_6337554915377515647_n.jpg,frame_0222.jpg,800074111_970174286101848_6337554915377515647_n.txt,frame_0222.txt
+frame,800116787_970174099435200_2319647429412901534_n.jpg,frame_0223.jpg,800116787_970174099435200_2319647429412901534_n.txt,frame_0223.txt
+frame,800811945_970174319435178_7792595958611715207_n.jpg,frame_0224.jpg,800811945_970174319435178_7792595958611715207_n.txt,frame_0224.txt
+frame,800819184_970174192768524_1197929818690819197_n.jpg,frame_0225.jpg,800819184_970174192768524_1197929818690819197_n.txt,frame_0225.txt
+frame,800819204_970174059435204_4685162326294953905_n.jpg,frame_0226.jpg,800819204_970174059435204_4685162326294953905_n.txt,frame_0226.txt
+frame,800827637_970174352768508_8185071998741546800_n.jpg,frame_0227.jpg,800827637_970174352768508_8185071998741546800_n.txt,frame_0227.txt
+frame,800843189_970174139435196_1320416016849265993_n.jpg,frame_0228.jpg,800843189_970174139435196_1320416016849265993_n.txt,frame_0228.txt
+frame,806129214_2283103515822264_6270734686053823281_n.jpg,frame_0229.jpg,806129214_2283103515822264_6270734686053823281_n.txt,frame_0229.txt
+frame,806473736_2283103542488928_8547605411497744792_n.jpg,frame_0230.jpg,806473736_2283103542488928_8547605411497744792_n.txt,frame_0230.txt
+frame,806473760_2283103405822275_951946185397885977_n.jpg,frame_0231.jpg,806473760_2283103405822275_951946185397885977_n.txt,frame_0231.txt
+frame,808138261_970174222768521_5369765882199460663_n.jpg,frame_0232.jpg,808138261_970174222768521_5369765882199460663_n.txt,frame_0232.txt
+frame,808138267_970174252768518_6538318020975727869_n.jpg,frame_0233.jpg,808138267_970174252768518_6538318020975727869_n.txt,frame_0233.txt
+frame,810623519_3162188783980732_1998106931107564672_n.jpg,frame_0234.jpg,810623519_3162188783980732_1998106931107564672_n.txt,frame_0234.txt
+frame,813020855_3163211883878422_7868697834925121591_n.jpg,frame_0235.jpg,813020855_3163211883878422_7868697834925121591_n.txt,frame_0235.txt
+frame,813282274_3163237170542560_2816170267688761032_n.jpg,frame_0236.jpg,813282274_3163237170542560_2816170267688761032_n.txt,frame_0236.txt
+frame,814338537_10231433125040713_6229281902451332653_n.jpg,frame_0237.jpg,814338537_10231433125040713_6229281902451332653_n.txt,frame_0237.txt
+frame,814779632_10231433124320695_227545632473398281_n.jpg,frame_0238.jpg,814779632_10231433124320695_227545632473398281_n.txt,frame_0238.txt
+frame,814785672_10231433119120565_7400050866881396941_n.jpg,frame_0239.jpg,814785672_10231433119120565_7400050866881396941_n.txt,frame_0239.txt
+frame,PXL_20260723_022616689.RAW-01.jpg,frame_0240.jpg,PXL_20260723_022616689.RAW-01.txt,frame_0240.txt
+frame,PXL_20260727_233751351.RAW-01.jpg,frame_0241.jpg,PXL_20260727_233751351.RAW-01.txt,frame_0241.txt
+frame,PXL_20260815_053046088.RAW-01.jpg,frame_0242.jpg,PXL_20260815_053046088.RAW-01.txt,frame_0242.txt
+frame,PXL_20260822_205020911.RAW-01.jpg,frame_0243.jpg,PXL_20260822_205020911.RAW-01.txt,frame_0243.txt
+frame,PXL_20260822_205910779.RAW-01.jpg,frame_0244.jpg,PXL_20260822_205910779.RAW-01.txt,frame_0244.txt
+frame,PXL_20260831_135058750.RAW-01.jpg,frame_0245.jpg,PXL_20260831_135058750.RAW-01.txt,frame_0245.txt
+frame,PXL_20260831_142604038.RAW-01.jpg,frame_0246.jpg,PXL_20260831_142604038.RAW-01.txt,frame_0246.txt
+frame,PXL_20260910_005306710.RAW-01.jpg,frame_0247.jpg,PXL_20260910_005306710.RAW-01.txt,frame_0247.txt
+frame,PXL_20260910_005308807.RAW-01.jpg,frame_0248.jpg,PXL_20260910_005308807.RAW-01.txt,frame_0248.txt
+frame,WhatsApp Image 2026-07-28 at 18.55.23.jpeg,frame_0249.jpeg,WhatsApp Image 2026-07-28 at 18.55.23.txt,frame_0249.txt
+frame,WhatsApp Image 2026-08-05 at 20.32.04.jpeg,frame_0250.jpeg,WhatsApp Image 2026-08-05 at 20.32.04.txt,frame_0250.txt
+frame,WhatsApp Image 2026-08-07 at 17.44.15.jpeg,frame_0251.jpeg,WhatsApp Image 2026-08-07 at 17.44.15.txt,frame_0251.txt
+frame,WhatsApp Image 2026-08-07 at 17.48.41.jpeg,frame_0252.jpeg,WhatsApp Image 2026-08-07 at 17.48.41.txt,frame_0252.txt
+frame,WhatsApp Image 2026-08-07 at 18.01.59.jpeg,frame_0253.jpeg,WhatsApp Image 2026-08-07 at 18.01.59.txt,frame_0253.txt
+frame,WhatsApp Image 2026-08-07 at 20.37.04.jpeg,frame_0254.jpeg,WhatsApp Image 2026-08-07 at 20.37.04.txt,frame_0254.txt
+frame,WhatsApp Image 2026-08-08 at 13.52.37.jpeg,frame_0255.jpeg,WhatsApp Image 2026-08-08 at 13.52.37.txt,frame_0255.txt
+frame,WhatsApp Image 2026-08-10 at 10.19.52.jpeg,frame_0256.jpeg,WhatsApp Image 2026-08-10 at 10.19.52.txt,frame_0256.txt
+frame,WhatsApp Image 2026-08-23 at 14.56.22.jpeg,frame_0257.jpeg,WhatsApp Image 2026-08-23 at 14.56.22.txt,frame_0257.txt
+frame,WhatsApp Image 2026-08-29 at 18.18.02.jpeg,frame_0258.jpeg,WhatsApp Image 2026-08-29 at 18.18.02.txt,frame_0258.txt
+frame,WhatsApp Image 2026-08-31 at 20.38.29.jpeg,frame_0259.jpeg,WhatsApp Image 2026-08-31 at 20.38.29.txt,frame_0259.txt
+frame,WhatsApp Image 2026-09-13 at 19.19.06.jpeg,frame_0260.jpeg,WhatsApp Image 2026-09-13 at 19.19.06.txt,frame_0260.txt
+frame,WhatsApp Image 2026-09-14 at 16.53.40.jpeg,frame_0261.jpeg,WhatsApp Image 2026-09-14 at 16.53.40.txt,frame_0261.txt
+frame,WhatsApp Image 2026-09-14 at 17.20.39.jpeg,frame_0262.jpeg,WhatsApp Image 2026-09-14 at 17.20.39.txt,frame_0262.txt
+frame,WhatsApp Image 2026-09-14 at 18.48.49.jpeg,frame_0263.jpeg,WhatsApp Image 2026-09-14 at 18.48.49.txt,frame_0263.txt
