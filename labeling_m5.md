@@ -52,6 +52,22 @@ python augment_dataset.py --n 1                   # recetas equivalentes + draft
 python training.py
 ```
 
+## 6. Re-etiquetado automático de todo el dataset + revisión
+
+```bash
+python autolabel.py   # re-predice labels de train/val/photos (no toca images/new)
+```
+Escribe el `.txt` al lado de cada imagen y en `labels/`. Para revisar a mano
+con labelImg los labels reales (sin romper la estructura), crear symlinks:
+
+```bash
+rm -f labels/*.txt && for d in train val; do
+  for t in labels/$d/*.txt; do [ -e "$t" ] || continue; ln -sf ../labels/$d/${t##*/} images/$d/; done
+done
+```
+Esto fue lo que quedó en `labels/train|val` + `photos/labels/*`
+después de revisar en labelImg — los cambios se guardan en `labels/`.
+
 ## Notas
 
 - Las imágenes nunca se renombran a mano: `normalize_names.py` renombra
